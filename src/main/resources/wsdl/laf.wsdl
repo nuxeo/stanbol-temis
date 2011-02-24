@@ -1,0 +1,832 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wsdl:definitions name="TemisWebService" targetNamespace="http://luxid.temis.com/ws" xmlns:ns1="http://luxid.temis.com/ws/types" xmlns:ns2="http://cxf.apache.org/bindings/xformat" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:tns="http://luxid.temis.com/ws" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <wsdl:types>
+<xs:schema attributeFormDefault="unqualified" elementFormDefault="qualified" targetNamespace="http://luxid.temis.com/ws/types" xmlns:tns="http://luxid.temis.com/ws/types" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+<xs:element name="DateMetadata">
+<xs:complexType>
+<xs:simpleContent>
+<xs:extension base="xs:anySimpleType">
+<xs:attribute name="name" type="xs:string" use="required"/>
+</xs:extension>
+</xs:simpleContent>
+</xs:complexType>
+</xs:element>
+<xs:element name="FloatMetadata">
+<xs:complexType>
+<xs:simpleContent>
+<xs:extension base="xs:float">
+<xs:attribute name="name" type="xs:string" use="required"/>
+</xs:extension>
+</xs:simpleContent>
+</xs:complexType>
+</xs:element>
+<xs:element name="IntegerMetadata">
+<xs:complexType>
+<xs:simpleContent>
+<xs:extension base="xs:integer">
+<xs:attribute name="name" type="xs:string" use="required"/>
+</xs:extension>
+</xs:simpleContent>
+</xs:complexType>
+</xs:element>
+<xs:element name="StringMetadata">
+<xs:complexType>
+<xs:simpleContent>
+<xs:extension base="xs:string">
+<xs:attribute name="name" type="xs:string" use="required"/>
+</xs:extension>
+</xs:simpleContent>
+</xs:complexType>
+</xs:element>
+<xs:element name="annotateAttachedDocument">
+<xs:complexType>
+<xs:sequence>
+<xs:element name="sessionKey" type="xs:string"/>
+<xs:element name="plan" type="xs:string"/>
+<xs:element name="data" ns1:expectedContentTypes="application/octet-stream" type="xs:base64Binary" xmlns:ns1="http://www.w3.org/2005/05/xmlmime"/>
+<xs:element name="consumer" type="xs:string"/>
+</xs:sequence>
+</xs:complexType>
+</xs:element>
+<xs:element name="annotateAttachedDocumentResponseType">
+<xs:complexType>
+<xs:sequence>
+<xs:element name="output" type="tns:Output"/>
+<xs:element name="fault" type="tns:Fault"/>
+</xs:sequence>
+</xs:complexType>
+</xs:element>
+<xs:element name="annotateAttachedXmlDocument">
+<xs:complexType>
+<xs:sequence>
+<xs:element name="sessionKey" type="xs:string"/>
+<xs:element name="plan" type="xs:string"/>
+<xs:element name="data" ns2:expectedContentTypes="application/octet-stream" type="xs:base64Binary" xmlns:ns2="http://www.w3.org/2005/05/xmlmime"/>
+<xs:element name="xmlType" type="xs:string"/>
+<xs:element name="consumer" type="xs:string"/>
+</xs:sequence>
+</xs:complexType>
+</xs:element>
+<xs:element name="annotateAttachedXmlDocumentResponseType">
+<xs:complexType>
+<xs:sequence>
+<xs:element name="output" type="tns:ArrayOfOutput"/>
+<xs:element name="fault" type="tns:Fault"/>
+</xs:sequence>
+</xs:complexType>
+</xs:element>
+<xs:element name="annotateDocument">
+<xs:complexType>
+<xs:sequence>
+<xs:element name="sessionKey" type="xs:string"/>
+<xs:element name="plan" type="xs:string"/>
+<xs:element name="data" type="xs:base64Binary"/>
+<xs:element name="consumer" type="xs:string"/>
+</xs:sequence>
+</xs:complexType>
+</xs:element>
+<xs:element name="annotateDocumentResponseType">
+<xs:complexType>
+<xs:sequence>
+<xs:element name="output" type="tns:Output"/>
+<xs:element name="fault" type="tns:Fault"/>
+</xs:sequence>
+</xs:complexType>
+</xs:element>
+<xs:element name="annotateString">
+<xs:complexType>
+<xs:sequence>
+<xs:element name="sessionKey" type="xs:string"/>
+<xs:element name="plan" type="xs:string"/>
+<xs:element name="data" type="xs:string"/>
+<xs:element name="consumer" type="xs:string"/>
+</xs:sequence>
+</xs:complexType>
+</xs:element>
+<xs:element name="annotateStringResponseType">
+<xs:complexType>
+<xs:sequence>
+<xs:element name="output" type="tns:Output"/>
+<xs:element name="fault" type="tns:Fault"/>
+</xs:sequence>
+</xs:complexType>
+</xs:element>
+<xs:element name="annotateURL">
+<xs:complexType>
+<xs:sequence>
+<xs:element name="sessionKey" type="xs:string"/>
+<xs:element name="plan" type="xs:string"/>
+<xs:element name="url" type="xs:string"/>
+<xs:element name="credentials" type="tns:Credentials"/>
+<xs:element name="consumer" type="xs:string"/>
+</xs:sequence>
+</xs:complexType>
+</xs:element>
+<xs:element name="annotateURLResponseType">
+<xs:complexType>
+<xs:sequence>
+<xs:element name="output" type="tns:Output"/>
+<xs:element name="fault" type="tns:Fault"/>
+</xs:sequence>
+</xs:complexType>
+</xs:element>
+<xs:element name="annotateUploadedDocument">
+<xs:complexType>
+<xs:sequence>
+<xs:element name="sessionKey" type="xs:string"/>
+<xs:element name="plan" type="xs:string"/>
+<xs:element name="key" type="xs:string"/>
+<xs:element name="consumer" type="xs:string"/>
+</xs:sequence>
+</xs:complexType>
+</xs:element>
+<xs:element name="annotateUploadedDocumentResponseType">
+<xs:complexType>
+<xs:sequence>
+<xs:element name="output" type="tns:Output"/>
+<xs:element name="fault" type="tns:Fault"/>
+</xs:sequence>
+</xs:complexType>
+</xs:element>
+<xs:element name="annotateXmlDocument">
+<xs:complexType>
+<xs:sequence>
+<xs:element name="sessionKey" type="xs:string"/>
+<xs:element name="plan" type="xs:string"/>
+<xs:element name="data" type="xs:base64Binary"/>
+<xs:element name="xmlType" type="xs:string"/>
+<xs:element name="consumer" type="xs:string"/>
+</xs:sequence>
+</xs:complexType>
+</xs:element>
+<xs:element name="annotateXmlDocumentResponseType">
+<xs:complexType>
+<xs:sequence>
+<xs:element name="output" type="tns:ArrayOfOutput"/>
+<xs:element name="fault" type="tns:Fault"/>
+</xs:sequence>
+</xs:complexType>
+</xs:element>
+<xs:element name="authenticate">
+<xs:complexType>
+<xs:sequence>
+<xs:element name="userName" type="xs:string"/>
+<xs:element name="userPassword" type="xs:string"/>
+</xs:sequence>
+</xs:complexType>
+</xs:element>
+<xs:element name="authenticateResponseType">
+<xs:complexType>
+<xs:sequence>
+<xs:element name="token" type="xs:string"/>
+<xs:element name="fault" type="tns:Fault"/>
+</xs:sequence>
+</xs:complexType>
+</xs:element>
+<xs:element name="closeSession">
+<xs:complexType>
+<xs:sequence>
+<xs:element name="sessionKey" type="xs:string"/>
+</xs:sequence>
+</xs:complexType>
+</xs:element>
+<xs:element name="closeSessionResponseType">
+<xs:complexType>
+<xs:sequence>
+<xs:element name="fault" type="tns:Fault"/>
+</xs:sequence>
+</xs:complexType>
+</xs:element>
+<xs:element name="displayConfig">
+<xs:complexType>
+<xs:sequence/>
+</xs:complexType>
+</xs:element>
+<xs:element name="displayConfigResponseType" nillable="true" type="xs:string"/>
+<xs:element name="getConsumers">
+<xs:complexType>
+<xs:sequence>
+<xs:element name="sessionKey" type="xs:string"/>
+</xs:sequence>
+</xs:complexType>
+</xs:element>
+<xs:element name="getConsumersResponseType">
+<xs:complexType>
+<xs:sequence>
+<xs:element name="consumers" type="tns:ArrayOfString"/>
+<xs:element name="fault" type="tns:Fault"/>
+</xs:sequence>
+</xs:complexType>
+</xs:element>
+<xs:element name="getFeeders">
+<xs:complexType>
+<xs:sequence>
+<xs:element name="sessionKey" type="xs:string"/>
+</xs:sequence>
+</xs:complexType>
+</xs:element>
+<xs:element name="getFeedersResponseType">
+<xs:complexType>
+<xs:sequence>
+<xs:element name="feeders" type="tns:ArrayOfFeeder"/>
+<xs:element name="fault" type="tns:Fault"/>
+</xs:sequence>
+</xs:complexType>
+</xs:element>
+<xs:element name="getPlans">
+<xs:complexType>
+<xs:sequence>
+<xs:element name="sessionKey" type="xs:string"/>
+</xs:sequence>
+</xs:complexType>
+</xs:element>
+<xs:element name="getPlansResponseType">
+<xs:complexType>
+<xs:sequence>
+<xs:element name="plans" type="tns:ArrayOfAnnotationPlan"/>
+<xs:element name="fault" type="tns:Fault"/>
+</xs:sequence>
+</xs:complexType>
+</xs:element>
+<xs:element name="getVersion">
+<xs:complexType>
+<xs:sequence/>
+</xs:complexType>
+</xs:element>
+<xs:element name="getVersionResponseType" nillable="true" type="xs:string"/>
+<xs:element name="saveAttachedDocument">
+<xs:complexType>
+<xs:sequence>
+<xs:element name="sessionKey" type="xs:string"/>
+<xs:element name="plan" type="xs:string"/>
+<xs:element name="documentName" type="xs:string"/>
+<xs:element name="metadatas" type="tns:ArrayOfMetadata"/>
+<xs:element name="feeder" type="xs:string"/>
+<xs:element name="data" ns3:expectedContentTypes="application/octet-stream" type="xs:base64Binary" xmlns:ns3="http://www.w3.org/2005/05/xmlmime"/>
+</xs:sequence>
+</xs:complexType>
+</xs:element>
+<xs:element name="saveAttachedDocumentResponseType">
+<xs:complexType>
+<xs:sequence>
+<xs:element name="output" type="xs:string"/>
+<xs:element name="fault" type="tns:Fault"/>
+</xs:sequence>
+</xs:complexType>
+</xs:element>
+<xs:element name="saveDocument">
+<xs:complexType>
+<xs:sequence>
+<xs:element name="sessionKey" type="xs:string"/>
+<xs:element name="plan" type="xs:string"/>
+<xs:element name="documentName" type="xs:string"/>
+<xs:element name="metadatas" type="tns:ArrayOfMetadata"/>
+<xs:element name="feeder" type="xs:string"/>
+<xs:element name="data" type="xs:base64Binary"/>
+</xs:sequence>
+</xs:complexType>
+</xs:element>
+<xs:element name="saveDocumentResponseType">
+<xs:complexType>
+<xs:sequence>
+<xs:element name="output" type="xs:string"/>
+<xs:element name="fault" type="tns:Fault"/>
+</xs:sequence>
+</xs:complexType>
+</xs:element>
+<xs:element name="saveLast">
+<xs:complexType>
+<xs:sequence>
+<xs:element name="sessionKey" type="xs:string"/>
+<xs:element name="documentName" type="xs:string"/>
+<xs:element name="metadatas" type="tns:ArrayOfMetadata"/>
+<xs:element name="feeder" type="xs:string"/>
+</xs:sequence>
+</xs:complexType>
+</xs:element>
+<xs:element name="saveLastResponseType">
+<xs:complexType>
+<xs:sequence>
+<xs:element name="output" type="xs:string"/>
+<xs:element name="fault" type="tns:Fault"/>
+</xs:sequence>
+</xs:complexType>
+</xs:element>
+<xs:element name="saveString">
+<xs:complexType>
+<xs:sequence>
+<xs:element name="sessionKey" type="xs:string"/>
+<xs:element name="plan" type="xs:string"/>
+<xs:element name="documentName" type="xs:string"/>
+<xs:element name="metadatas" type="tns:ArrayOfMetadata"/>
+<xs:element name="feeder" type="xs:string"/>
+<xs:element name="data" type="xs:string"/>
+</xs:sequence>
+</xs:complexType>
+</xs:element>
+<xs:element name="saveStringResponseType">
+<xs:complexType>
+<xs:sequence>
+<xs:element name="output" type="xs:string"/>
+<xs:element name="fault" type="tns:Fault"/>
+</xs:sequence>
+</xs:complexType>
+</xs:element>
+<xs:complexType name="Output">
+<xs:sequence>
+<xs:element maxOccurs="unbounded" minOccurs="0" name="parts" nillable="true" type="tns:OutputPart"/>
+</xs:sequence>
+</xs:complexType>
+<xs:complexType name="OutputPart">
+<xs:sequence>
+<xs:element name="mime" type="xs:string"/>
+<xs:element name="name" type="xs:string"/>
+<xs:element name="text" type="xs:string"/>
+</xs:sequence>
+</xs:complexType>
+<xs:complexType name="Fault">
+<xs:sequence>
+<xs:element name="code" type="xs:long"/>
+<xs:element name="message" type="xs:string"/>
+<xs:element name="stacktrace" type="xs:string"/>
+</xs:sequence>
+</xs:complexType>
+<xs:complexType name="ArrayOfFeeder">
+<xs:sequence>
+<xs:element maxOccurs="unbounded" minOccurs="0" name="feeders" nillable="true" type="tns:Feeder"/>
+</xs:sequence>
+</xs:complexType>
+<xs:complexType name="Feeder">
+<xs:sequence>
+<xs:element name="id" type="xs:string"/>
+<xs:element name="host" type="xs:string"/>
+<xs:element name="name" type="xs:string"/>
+</xs:sequence>
+</xs:complexType>
+<xs:complexType name="ArrayOfOutput">
+<xs:sequence>
+<xs:element maxOccurs="unbounded" minOccurs="0" name="outputs" nillable="true" type="tns:Output"/>
+</xs:sequence>
+</xs:complexType>
+<xs:complexType name="ArrayOfAnnotationPlan">
+<xs:sequence>
+<xs:element maxOccurs="unbounded" minOccurs="0" name="return" type="tns:AnnotationPlan"/>
+</xs:sequence>
+</xs:complexType>
+<xs:complexType name="AnnotationPlan">
+<xs:sequence>
+<xs:element name="name" type="xs:string"/>
+<xs:element name="description" type="xs:string"/>
+</xs:sequence>
+</xs:complexType>
+<xs:complexType name="ArrayOfString">
+<xs:sequence>
+<xs:element maxOccurs="unbounded" minOccurs="0" name="return" type="xs:string"/>
+</xs:sequence>
+</xs:complexType>
+<xs:complexType name="ArrayOfMetadata">
+<xs:sequence>
+<xs:choice maxOccurs="unbounded" minOccurs="0">
+<xs:element ref="tns:FloatMetadata"/>
+<xs:element ref="tns:IntegerMetadata"/>
+<xs:element ref="tns:StringMetadata"/>
+<xs:element ref="tns:DateMetadata"/>
+</xs:choice>
+</xs:sequence>
+</xs:complexType>
+<xs:complexType name="Credentials">
+<xs:sequence>
+<xs:element name="host" type="xs:string"/>
+<xs:element name="port" type="xs:int"/>
+<xs:element name="realm" type="xs:string"/>
+<xs:element name="userName" type="xs:string"/>
+<xs:element name="userPassword" type="xs:string"/>
+</xs:sequence>
+</xs:complexType>
+</xs:schema>
+  </wsdl:types>
+  <wsdl:message name="annotateAttachedXmlDocument">
+    <wsdl:part element="ns1:annotateAttachedXmlDocument" name="parameters">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="getVersionResponse">
+    <wsdl:part element="ns1:getVersionResponseType" name="data">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="annotateAttachedDocumentResponse">
+    <wsdl:part element="ns1:annotateAttachedDocumentResponseType" name="parameters">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="saveAttachedDocumentResponse">
+    <wsdl:part element="ns1:saveAttachedDocumentResponseType" name="parameters">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="getPlans">
+    <wsdl:part element="ns1:getPlans" name="parameters">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="annotateXmlDocument">
+    <wsdl:part element="ns1:annotateXmlDocument" name="parameters">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="getConsumersResponse">
+    <wsdl:part element="ns1:getConsumersResponseType" name="parameters">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="saveLastResponse">
+    <wsdl:part element="ns1:saveLastResponseType" name="parameters">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="annotateDocumentResponse">
+    <wsdl:part element="ns1:annotateDocumentResponseType" name="parameters">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="getConsumers">
+    <wsdl:part element="ns1:getConsumers" name="parameters">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="annotateAttachedDocument">
+    <wsdl:part element="ns1:annotateAttachedDocument" name="parameters">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="annotateString">
+    <wsdl:part element="ns1:annotateString" name="parameters">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="saveDocumentResponse">
+    <wsdl:part element="ns1:saveDocumentResponseType" name="parameters">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="annotateUploadedDocument">
+    <wsdl:part element="ns1:annotateUploadedDocument" name="parameters">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="displayConfigResponse">
+    <wsdl:part element="ns1:displayConfigResponseType" name="data">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="getFeedersResponse">
+    <wsdl:part element="ns1:getFeedersResponseType" name="parameters">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="saveStringResponse">
+    <wsdl:part element="ns1:saveStringResponseType" name="parameters">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="annotateUploadedDocumentResponse">
+    <wsdl:part element="ns1:annotateUploadedDocumentResponseType" name="parameters">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="annotateStringResponse">
+    <wsdl:part element="ns1:annotateStringResponseType" name="parameters">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="getVersion">
+    <wsdl:part element="ns1:getVersion" name="data">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="authenticate">
+    <wsdl:part element="ns1:authenticate" name="parameters">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="saveLast">
+    <wsdl:part element="ns1:saveLast" name="parameters">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="annotateDocument">
+    <wsdl:part element="ns1:annotateDocument" name="parameters">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="displayConfig">
+    <wsdl:part element="ns1:displayConfig" name="data">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="getPlansResponse">
+    <wsdl:part element="ns1:getPlansResponseType" name="parameters">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="annotateXmlDocumentResponse">
+    <wsdl:part element="ns1:annotateXmlDocumentResponseType" name="parameters">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="annotateAttachedXmlDocumentResponse">
+    <wsdl:part element="ns1:annotateAttachedXmlDocumentResponseType" name="parameters">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="closeSession">
+    <wsdl:part element="ns1:closeSession" name="parameters">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="saveString">
+    <wsdl:part element="ns1:saveString" name="parameters">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="getFeeders">
+    <wsdl:part element="ns1:getFeeders" name="parameters">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="saveAttachedDocument">
+    <wsdl:part element="ns1:saveAttachedDocument" name="parameters">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="annotateURL">
+    <wsdl:part element="ns1:annotateURL" name="parameters">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="authenticateResponse">
+    <wsdl:part element="ns1:authenticateResponseType" name="parameters">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="annotateURLResponse">
+    <wsdl:part element="ns1:annotateURLResponseType" name="parameters">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="closeSessionResponse">
+    <wsdl:part element="ns1:closeSessionResponseType" name="parameters">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="saveDocument">
+    <wsdl:part element="ns1:saveDocument" name="parameters">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:portType name="TemisWebServicePortType">
+    <wsdl:operation name="annotateAttachedDocument">
+      <wsdl:input message="tns:annotateAttachedDocument" name="annotateAttachedDocument">
+    </wsdl:input>
+      <wsdl:output message="tns:annotateAttachedDocumentResponse" name="annotateAttachedDocumentResponse">
+    </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="getFeeders">
+      <wsdl:input message="tns:getFeeders" name="getFeeders">
+    </wsdl:input>
+      <wsdl:output message="tns:getFeedersResponse" name="getFeedersResponse">
+    </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="annotateUploadedDocument">
+      <wsdl:input message="tns:annotateUploadedDocument" name="annotateUploadedDocument">
+    </wsdl:input>
+      <wsdl:output message="tns:annotateUploadedDocumentResponse" name="annotateUploadedDocumentResponse">
+    </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="annotateAttachedXmlDocument">
+      <wsdl:input message="tns:annotateAttachedXmlDocument" name="annotateAttachedXmlDocument">
+    </wsdl:input>
+      <wsdl:output message="tns:annotateAttachedXmlDocumentResponse" name="annotateAttachedXmlDocumentResponse">
+    </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="authenticate">
+      <wsdl:input message="tns:authenticate" name="authenticate">
+    </wsdl:input>
+      <wsdl:output message="tns:authenticateResponse" name="authenticateResponse">
+    </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="getPlans">
+      <wsdl:input message="tns:getPlans" name="getPlans">
+    </wsdl:input>
+      <wsdl:output message="tns:getPlansResponse" name="getPlansResponse">
+    </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="annotateDocument">
+      <wsdl:input message="tns:annotateDocument" name="annotateDocument">
+    </wsdl:input>
+      <wsdl:output message="tns:annotateDocumentResponse" name="annotateDocumentResponse">
+    </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="getConsumers">
+      <wsdl:input message="tns:getConsumers" name="getConsumers">
+    </wsdl:input>
+      <wsdl:output message="tns:getConsumersResponse" name="getConsumersResponse">
+    </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="closeSession">
+      <wsdl:input message="tns:closeSession" name="closeSession">
+    </wsdl:input>
+      <wsdl:output message="tns:closeSessionResponse" name="closeSessionResponse">
+    </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="saveAttachedDocument">
+      <wsdl:input message="tns:saveAttachedDocument" name="saveAttachedDocument">
+    </wsdl:input>
+      <wsdl:output message="tns:saveAttachedDocumentResponse" name="saveAttachedDocumentResponse">
+    </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="saveDocument">
+      <wsdl:input message="tns:saveDocument" name="saveDocument">
+    </wsdl:input>
+      <wsdl:output message="tns:saveDocumentResponse" name="saveDocumentResponse">
+    </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="annotateURL">
+      <wsdl:input message="tns:annotateURL" name="annotateURL">
+    </wsdl:input>
+      <wsdl:output message="tns:annotateURLResponse" name="annotateURLResponse">
+    </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="getVersion">
+      <wsdl:input message="tns:getVersion" name="getVersion">
+    </wsdl:input>
+      <wsdl:output message="tns:getVersionResponse" name="getVersionResponse">
+    </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="saveString">
+      <wsdl:input message="tns:saveString" name="saveString">
+    </wsdl:input>
+      <wsdl:output message="tns:saveStringResponse" name="saveStringResponse">
+    </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="annotateXmlDocument">
+      <wsdl:input message="tns:annotateXmlDocument" name="annotateXmlDocument">
+    </wsdl:input>
+      <wsdl:output message="tns:annotateXmlDocumentResponse" name="annotateXmlDocumentResponse">
+    </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="displayConfig">
+      <wsdl:input message="tns:displayConfig" name="displayConfig">
+    </wsdl:input>
+      <wsdl:output message="tns:displayConfigResponse" name="displayConfigResponse">
+    </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="annotateString">
+      <wsdl:input message="tns:annotateString" name="annotateString">
+    </wsdl:input>
+      <wsdl:output message="tns:annotateStringResponse" name="annotateStringResponse">
+    </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="saveLast">
+      <wsdl:input message="tns:saveLast" name="saveLast">
+    </wsdl:input>
+      <wsdl:output message="tns:saveLastResponse" name="saveLastResponse">
+    </wsdl:output>
+    </wsdl:operation>
+  </wsdl:portType>
+  <wsdl:binding name="TemisWebServiceSoapBinding" type="tns:TemisWebServicePortType">
+    <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+    <wsdl:operation name="annotateAttachedDocument">
+      <soap:operation soapAction="" style="document"/>
+      <wsdl:input name="annotateAttachedDocument">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="annotateAttachedDocumentResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="getFeeders">
+      <soap:operation soapAction="" style="document"/>
+      <wsdl:input name="getFeeders">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="getFeedersResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="annotateAttachedXmlDocument">
+      <soap:operation soapAction="" style="document"/>
+      <wsdl:input name="annotateAttachedXmlDocument">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="annotateAttachedXmlDocumentResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="annotateUploadedDocument">
+      <soap:operation soapAction="" style="document"/>
+      <wsdl:input name="annotateUploadedDocument">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="annotateUploadedDocumentResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="authenticate">
+      <soap:operation soapAction="" style="document"/>
+      <wsdl:input name="authenticate">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="authenticateResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="getPlans">
+      <soap:operation soapAction="" style="document"/>
+      <wsdl:input name="getPlans">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="getPlansResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="annotateDocument">
+      <soap:operation soapAction="" style="document"/>
+      <wsdl:input name="annotateDocument">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="annotateDocumentResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="getConsumers">
+      <soap:operation soapAction="" style="document"/>
+      <wsdl:input name="getConsumers">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="getConsumersResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="closeSession">
+      <soap:operation soapAction="" style="document"/>
+      <wsdl:input name="closeSession">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="closeSessionResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="saveAttachedDocument">
+      <soap:operation soapAction="" style="document"/>
+      <wsdl:input name="saveAttachedDocument">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="saveAttachedDocumentResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="saveDocument">
+      <soap:operation soapAction="" style="document"/>
+      <wsdl:input name="saveDocument">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="saveDocumentResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="annotateURL">
+      <soap:operation soapAction="" style="document"/>
+      <wsdl:input name="annotateURL">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="annotateURLResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="getVersion">
+      <soap:operation soapAction="" style="document"/>
+      <wsdl:input name="getVersion">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="getVersionResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="saveString">
+      <soap:operation soapAction="" style="document"/>
+      <wsdl:input name="saveString">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="saveStringResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="annotateXmlDocument">
+      <soap:operation soapAction="" style="document"/>
+      <wsdl:input name="annotateXmlDocument">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="annotateXmlDocumentResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="annotateString">
+      <soap:operation soapAction="" style="document"/>
+      <wsdl:input name="annotateString">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="annotateStringResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="displayConfig">
+      <soap:operation soapAction="" style="document"/>
+      <wsdl:input name="displayConfig">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="displayConfigResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="saveLast">
+      <soap:operation soapAction="" style="document"/>
+      <wsdl:input name="saveLast">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="saveLastResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:service name="TemisWebService">
+    <wsdl:port binding="tns:TemisWebServiceSoapBinding" name="WebAnnotationPort">
+      <soap:address location="http://193.104.205.28/LuxidWS/services/Annotation"/>
+    </wsdl:port>
+  </wsdl:service>
+</wsdl:definitions>
