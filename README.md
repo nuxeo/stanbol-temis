@@ -4,8 +4,8 @@ This project is an OSGi bundle extension for the [Apache Stanbol (Incubating)]
 [1] server to make Stanbol delegate the analysis of a piece of text to an
 instance of the [Temis Luxid Annotation Factory] [2] web service.
 
-[1] http://incubator.apache.org/stanbol
-[2] http://www.temis.com
+[1]: http://incubator.apache.org/stanbol
+[2]: http://www.temis.com
 
 ## Building and deploying
 
@@ -21,10 +21,10 @@ To build and deploy on a live Stanbol instance running on
     mvn install -o -DskipTests -PinstallBundle \
         -Dsling.url=http://localhost:8080/system/console
 
-Then go to the OSGi system console to set the URI and credentials of your Luxid
-instance:
+Then go to the OSGi system console to set the URI and credentials
+of your Luxid instance. Typically the URL looks like:
 
-  http://localhost:8080/system/console/configMgr/org.nuxeo.stanbol.temis.LuxidEnhancementEngine
+    http://localhost:8080/system/console/configMgr/org.nuxeo.stanbol.temis.LuxidEnhancementEngine
 
 
 ## Running the engine from a REST client
@@ -35,15 +35,31 @@ You can then analyse your text content as usual using the Stanbol rest API:
         --data "John Smith works at Smith Consulting in London, UK." \
         http://localhost:8080/engines/
 
-The resuling annotations are expressed using the Stanbol RDF voabulary.
+The resulting annotations are expressed using the Stanbol RDF vocabulary.
 
 
 ## From a Nuxeo Document Management server
 
-Install Nuxeo DM 5.4.0.1+ and the Semantic Entities add-on from the marketplace:
+Install Nuxeo DM 5.4.0.1+ and the [Semantic Entities add-on] [3] from
+the marketplace. Don't forget to [configure] [4] the add-on to point to
+your own Stanbol instance.
 
-  https://connect.nuxeo.com/nuxeo/site/marketplace/package/semantic-entities-1.0.0
+[3]: https://connect.nuxeo.com/nuxeo/site/marketplace/package/semantic-entities-1.0.0
+[4]: https://doc.nuxeo.com/display/NXDOC/Semantic+Entities+Installation+and+Configuration
 
-Don't forget to configure the add-on to point to your own Stanbol instance:
 
-  https://doc.nuxeo.com/display/NXDOC/Semantic+Entities+Installation+and+Configuration
+## About Nuxeo
+
+Nuxeo provides a modular, extensible Java-based [open source software
+platform for enterprise content management] [5] and packaged applications
+for [document management] [6], [digital asset management] [7] and
+[case management] [8]. Designed by developers for developers, the Nuxeo
+platform offers a modern architecture, a powerful plug-in model and
+extensive packaging capabilities for building content applications.
+
+[5]: http://www.nuxeo.com/en/products/ep
+[6]: http://www.nuxeo.com/en/products/document-management
+[7]: http://www.nuxeo.com/en/products/dam
+[8]: http://www.nuxeo.com/en/products/case-management
+
+More information on: <http://www.nuxeo.com/>
