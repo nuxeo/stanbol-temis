@@ -24,7 +24,7 @@ To build and deploy on a live Stanbol instance running on
 Then go to the OSGi system console to set the URI and credentials
 of your Luxid instance. Typically the URL looks like:
 
-    http://localhost:8080/system/console/configMgr/org.nuxeo.stanbol.temis.LuxidEnhancementEngine
+    http://localhost:8080/system/console/configMgr/org.nuxeo.stanbol.temis.TemisEnhancementEngine
 
 
 ## Running the engine from a REST client
