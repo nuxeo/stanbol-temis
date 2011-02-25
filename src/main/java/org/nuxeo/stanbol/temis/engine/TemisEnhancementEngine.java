@@ -14,6 +14,7 @@
  */
 package org.nuxeo.stanbol.temis.engine;
 
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -25,6 +26,7 @@ import java.util.Map;
 import javax.xml.namespace.QName;
 import javax.xml.ws.Holder;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -39,6 +41,7 @@ import org.nuxeo.stanbol.temis.impl.AnnotationPlan;
 import org.nuxeo.stanbol.temis.impl.ArrayOfAnnotationPlan;
 import org.nuxeo.stanbol.temis.impl.Fault;
 import org.nuxeo.stanbol.temis.impl.Output;
+import org.nuxeo.stanbol.temis.impl.OutputPart;
 import org.nuxeo.stanbol.temis.impl.TemisWebService;
 import org.nuxeo.stanbol.temis.impl.TemisWebServicePortType;
 import org.osgi.service.component.ComponentContext;
@@ -50,6 +53,8 @@ import org.osgi.service.component.ComponentContext;
 @Component(immediate = false, metatype = true, label = "%stanbol.TemisEnhancementEngine.name", description = "%stanbol.TemisEnhancementEngine.description")
 @Service
 public class TemisEnhancementEngine implements EnhancementEngine, ServiceProperties {
+
+    public static final String SIMPLE_XML_CONSUMER = "SimpleXML";
 
     public static final Log log = LogFactory.getLog(TemisEnhancementEngine.class);
 
@@ -64,7 +69,7 @@ public class TemisEnhancementEngine implements EnhancementEngine, ServicePropert
     @Property
     public static final String SERVICE_ACCOUNT_PASSWORD_PROPERTY = "stanbol.temis.service.account.password";
 
-    @Property
+    @Property(value = {"Entities"})
     public static final String SERVICE_ANNOTATION_PLAN_PROPERTY = "stanbol.temis.service.annotation.plan";
 
     /**
@@ -150,11 +155,18 @@ public class TemisEnhancementEngine implements EnhancementEngine, ServicePropert
         try {
             token = connect();
             Holder<Fault> fault = new Holder<Fault>();
-            String data = "";
-            String consumer = "";
+            // TODO: read charset from the request instead of harcoding UTF-8 requirement
+            String data = IOUtils.toString(ci.getStream(), "UTF-8");
             Holder<Output> output = new Holder<Output>();
-            wsPort.annotateString(token, plan, data, consumer, output, fault);
+            wsPort.annotateString(token, plan, data, SIMPLE_XML_CONSUMER, output, fault);
             handleFault(fault);
+            for (OutputPart part : output.value.getParts()) {
+                log.info(part.getName());
+                log.info(part.getMime());
+                log.info(part.getText());
+            }
+        } catch (IOException e) {
+            throw new EngineException(e);
         } finally {
             if (token != null) {
                 wsPort.closeSession(token);
