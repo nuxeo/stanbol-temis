@@ -23,6 +23,7 @@ import java.util.Dictionary;
 import java.util.List;
 import java.util.Map;
 
+import javax.xml.bind.JAXBException;
 import javax.xml.namespace.QName;
 import javax.xml.ws.Holder;
 
@@ -155,17 +156,20 @@ public class TemisEnhancementEngine implements EnhancementEngine, ServicePropert
         try {
             token = connect();
             Holder<Fault> fault = new Holder<Fault>();
-            // TODO: read charset from the request instead of harcoding UTF-8 requirement
+            // TODO: read charset from the request instead of hardcoding UTF-8 requirement
             String data = IOUtils.toString(ci.getStream(), "UTF-8");
             Holder<Output> output = new Holder<Output>();
             wsPort.annotateString(token, plan, data, SIMPLE_XML_CONSUMER, output, fault);
             handleFault(fault);
             for (OutputPart part : output.value.getParts()) {
-                log.info(part.getName());
-                log.info(part.getMime());
-                log.info(part.getText());
+                if ("DOCUMENT".equals(part.getName()) && "text/xml".equals(part.getMime())) {
+                    Doc result = Doc.readFrom(part.getText());
+                    log.info(result.getEntities().size());
+                }
             }
         } catch (IOException e) {
+            throw new EngineException(e);
+        } catch (JAXBException e) {
             throw new EngineException(e);
         } finally {
             if (token != null) {
