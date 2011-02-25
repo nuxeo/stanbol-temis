@@ -131,13 +131,23 @@
         <configuration>
           <instructions>
             <Bundle-Vendor>Nuxeo</Bundle-Vendor>
+            <Bundle-DocURL>${project.url}</Bundle-DocURL>
+            <Private-Package>
+              org.nuxeo.stanbol.temis.impl.*
+            </Private-Package>
             <Export-Package>
               org.nuxeo.stanbol.temis.engine.*;version=${project.version}
             </Export-Package>
             <Import-Package>
+              com.sun.xml.ws.*;version="[2.1.7,3.0)";resolution:=optional,
+              com.sun.xml.internal.ws.*;resolution:=optional,
               *
             </Import-Package>
-            <Bundle-DocURL>${project.url}</Bundle-DocURL>
+            <!--
+            <Embed-Dependency>activation,jaxws-api,jaxws-rt,jaxb-impl,mimepull,stax-api,streambuffer,wstx-asl,saaj-impl,saaj-api,stax-ex,resolver
+            </Embed-Dependency>
+            <Embed-Transitive>true</Embed-Transitive>
+             -->
           </instructions>
         </configuration>
       </plugin>
@@ -191,19 +201,19 @@
       <version>4.1.0</version>
       <scope>provided</scope>
     </dependency>
-
-    <!-- SOAP -->
-    <dependency>
-      <groupId>com.sun.xml.ws</groupId>
-      <artifactId>jaxws-rt</artifactId>
-      <version>2.1.7</version>
-      <scope>compile</scope>
-    </dependency>
     <dependency>
       <groupId>org.apache.felix</groupId>
       <artifactId>org.apache.felix.scr.annotations</artifactId>
       <version>1.2.0</version>
       <scope>provided</scope>
     </dependency>
+
+    <!-- SOAP -->
+    <dependency>
+      <groupId>com.sun.xml.ws</groupId>
+      <artifactId>jaxws-rt</artifactId>
+      <version>2.1.7</version>
+    </dependency>
+
   </dependencies>
 </project>

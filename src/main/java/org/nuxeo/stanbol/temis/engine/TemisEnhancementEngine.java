@@ -14,10 +14,14 @@
  */
 package org.nuxeo.stanbol.temis.engine;
 
-import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.Collections;
 import java.util.Dictionary;
 import java.util.Map;
+
+import javax.xml.namespace.QName;
+import javax.xml.ws.Holder;
 
 import org.apache.felix.scr.annotations.Component;
 import org.apache.felix.scr.annotations.Property;
@@ -26,6 +30,11 @@ import org.apache.stanbol.enhancer.servicesapi.ContentItem;
 import org.apache.stanbol.enhancer.servicesapi.EngineException;
 import org.apache.stanbol.enhancer.servicesapi.EnhancementEngine;
 import org.apache.stanbol.enhancer.servicesapi.ServiceProperties;
+import org.nuxeo.stanbol.temis.impl.ArrayOfAnnotationPlan;
+import org.nuxeo.stanbol.temis.impl.Fault;
+import org.nuxeo.stanbol.temis.impl.Output;
+import org.nuxeo.stanbol.temis.impl.TemisWebService;
+import org.nuxeo.stanbol.temis.impl.TemisWebServicePortType;
 import org.osgi.service.component.ComponentContext;
 
 /**
@@ -36,8 +45,10 @@ import org.osgi.service.component.ComponentContext;
 @Service
 public class TemisEnhancementEngine implements EnhancementEngine, ServiceProperties {
 
+    public static final QName SERVICE_NAME = new QName("http://luxid.temis.com/ws", "TemisWebService");
+
     @Property
-    public static final String SERVICE_URL_PROPERTY = "stanbol.temis.service.url";
+    public static final String SERVICE_WSDL_URL_PROPERTY = "stanbol.temis.service.wsdl.url";
 
     @Property
     public static final String SERVICE_ACCOUNT_ID_PROPERTY = "stanbol.temis.service.account.id";
@@ -53,25 +64,75 @@ public class TemisEnhancementEngine implements EnhancementEngine, ServicePropert
 
     protected static final String TEXT_PLAIN_MIMETYPE = "text/plain";
 
-    protected String url;
+    protected URL wsdlUrl;
 
     protected String id;
 
     protected String password;
 
-    protected void activate(ComponentContext ce) throws IOException {
+    protected TemisWebServicePortType wsPort;
+
+    protected void activate(ComponentContext ce) throws MalformedURLException, TemisAccessException {
         @SuppressWarnings("unchecked")
         Dictionary<String,String> properties = ce.getProperties();
-        url = properties.get(SERVICE_URL_PROPERTY);
+        String urlString = properties.get(SERVICE_WSDL_URL_PROPERTY);
         id = properties.get(SERVICE_ACCOUNT_ID_PROPERTY);
         password = properties.get(SERVICE_ACCOUNT_PASSWORD_PROPERTY);
 
+        if (urlString == null || id == null || password == null) {
+            return;
+        }
+        wsdlUrl = new URL(urlString);
+
         // check the connection to fail early in case of bad configuration parameters
+        TemisWebService tws = new TemisWebService(wsdlUrl, SERVICE_NAME);
+        wsPort = tws.getWebAnnotationPort();
+        wsPort.closeSession(connect());
+    }
+
+    protected void deactivate(ComponentContext ce) {
+        wsdlUrl = null;
+        id = null;
+        password = null;
+        wsPort = null;
+    }
+
+    public String connect() throws TemisAccessException {
+        Holder<String> token = new Holder<String>();
+        Holder<Fault> fault = new Holder<Fault>();
+        wsPort.authenticate(id, password, token, fault);
+
+        return token.value;
+    }
+
+    protected void handleFault(Holder<Fault> fault) throws TemisAccessException {
+        if (fault.value != null) {
+            throw new TemisAccessException(fault.value);
+        }
     }
 
     @Override
     public void computeEnhancements(ContentItem ci) throws EngineException {
-
+        String token = null;
+        try {
+            token = connect();
+            Holder<ArrayOfAnnotationPlan> plans = new Holder<ArrayOfAnnotationPlan>();
+            Holder<Fault> fault = new Holder<Fault>();
+            wsPort.getPlans(token, plans, fault);
+            handleFault(fault);
+            String data = "";
+            String consumer = "";
+            Holder<Output> output = new Holder<Output>();
+            wsPort.annotateString(token, plans.value.getReturn().get(0).getName(), data, consumer, output,
+                fault);
+            handleFault(fault);
+        } catch (TemisAccessException e) {
+            throw new EngineException(e);
+        } finally {
+            if (token != null) {
+                wsPort.closeSession(token);
+            }
+        }
     }
 
     public int canEnhance(ContentItem ci) {
