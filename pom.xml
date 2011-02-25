@@ -138,11 +138,6 @@
             <Export-Package>
               org.nuxeo.stanbol.temis.engine.*;version=${project.version}
             </Export-Package>
-            <Import-Package>
-              com.sun.xml.ws.*;version="[2.1.7,3.0)";resolution:=optional,
-              com.sun.xml.internal.ws.*;resolution:=optional,
-              *
-            </Import-Package>
             <!--
             <Embed-Dependency>activation,jaxws-api,jaxws-rt,jaxb-impl,mimepull,stax-api,streambuffer,wstx-asl,saaj-impl,saaj-api,stax-ex,resolver
             </Embed-Dependency>
@@ -213,6 +208,28 @@
       <groupId>com.sun.xml.ws</groupId>
       <artifactId>jaxws-rt</artifactId>
       <version>2.1.7</version>
+    </dependency>
+    
+    <!-- Logging -->
+    <dependency>
+      <groupId>commons-logging</groupId>
+      <artifactId>commons-logging</artifactId>
+      <version>1.1.1</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-api</artifactId>
+      <version>1.5.2</version>
+      <scope>provided</scope>
+    </dependency>
+    
+    <!-- Other useful stuff -->
+    <dependency>
+      <groupId>commons-lang</groupId>
+      <artifactId>commons-lang</artifactId>
+      <version>2.4</version>
+      <scope>provided</scope>
     </dependency>
 
   </dependencies>
