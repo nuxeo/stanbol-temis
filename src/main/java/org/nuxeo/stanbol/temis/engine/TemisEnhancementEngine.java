@@ -14,6 +14,10 @@
  */
 package org.nuxeo.stanbol.temis.engine;
 
+import static org.apache.stanbol.enhancer.servicesapi.rdf.Properties.ENHANCER_END;
+import static org.apache.stanbol.enhancer.servicesapi.rdf.Properties.ENHANCER_SELECTED_TEXT;
+import static org.apache.stanbol.enhancer.servicesapi.rdf.Properties.ENHANCER_START;
+
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -27,6 +31,10 @@ import javax.xml.bind.JAXBException;
 import javax.xml.namespace.QName;
 import javax.xml.ws.Holder;
 
+import org.apache.clerezza.rdf.core.LiteralFactory;
+import org.apache.clerezza.rdf.core.MGraph;
+import org.apache.clerezza.rdf.core.UriRef;
+import org.apache.clerezza.rdf.core.impl.TripleImpl;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
@@ -38,6 +46,7 @@ import org.apache.stanbol.enhancer.servicesapi.ContentItem;
 import org.apache.stanbol.enhancer.servicesapi.EngineException;
 import org.apache.stanbol.enhancer.servicesapi.EnhancementEngine;
 import org.apache.stanbol.enhancer.servicesapi.ServiceProperties;
+import org.apache.stanbol.enhancer.servicesapi.helper.EnhancementEngineHelper;
 import org.nuxeo.stanbol.temis.impl.AnnotationPlan;
 import org.nuxeo.stanbol.temis.impl.ArrayOfAnnotationPlan;
 import org.nuxeo.stanbol.temis.impl.Fault;
@@ -153,6 +162,8 @@ public class TemisEnhancementEngine implements EnhancementEngine, ServicePropert
     @Override
     public void computeEnhancements(ContentItem ci) throws EngineException {
         String token = null;
+        LiteralFactory literalFactory = LiteralFactory.getInstance();
+        MGraph g = ci.getMetadata();
         try {
             token = connect();
             Holder<Fault> fault = new Holder<Fault>();
@@ -165,6 +176,20 @@ public class TemisEnhancementEngine implements EnhancementEngine, ServicePropert
                 if ("DOCUMENT".equals(part.getName()) && "text/xml".equals(part.getMime())) {
                     Doc result = Doc.readFrom(part.getText());
                     log.info(result.getEntities().size());
+                    for (Entity entity : result.getEntities()) {
+                        log.info(entity.getPath());
+                        for (Occurrence occurrence : entity.getOccurrences()) {
+                            log.info(occurrence.getText());
+                            UriRef textAnnotation = EnhancementEngineHelper.createTextEnhancement(ci, this);
+                            g.add(new TripleImpl(textAnnotation, ENHANCER_SELECTED_TEXT, literalFactory
+                                    .createTypedLiteral(occurrence.getText())));
+                            // g.add(new TripleImpl(textAnnotation, DC_TYPE, typeUri));
+                            g.add(new TripleImpl(textAnnotation, ENHANCER_START, literalFactory
+                                    .createTypedLiteral(occurrence.getBegin())));
+                            g.add(new TripleImpl(textAnnotation, ENHANCER_END, literalFactory
+                                    .createTypedLiteral(occurrence.getEnd())));
+                        }
+                    }
                 }
             }
         } catch (IOException e) {

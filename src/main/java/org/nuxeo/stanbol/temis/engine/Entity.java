@@ -30,7 +30,7 @@ public class Entity {
 
     private String path;
 
-    private ArrayList<Occurrrence> occurrences = new ArrayList<Occurrrence>();
+    private ArrayList<Occurrence> occurrences = new ArrayList<Occurrence>();
 
     @XmlAttribute
     public String getId() {
@@ -61,11 +61,11 @@ public class Entity {
 
     @XmlElementWrapper(name = "occurrences")
     @XmlElement(name = "occurrence")
-    public ArrayList<Occurrrence> getOccurrences() {
+    public ArrayList<Occurrence> getOccurrences() {
         return occurrences;
     }
 
-    public void setOccurrences(ArrayList<Occurrrence> occurrences) {
+    public void setOccurrences(ArrayList<Occurrence> occurrences) {
         this.occurrences = occurrences;
     }
 

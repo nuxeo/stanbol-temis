@@ -19,7 +19,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlValue;
 
 @XmlRootElement(name = "occurrence")
-public class Occurrrence {
+public class Occurrence {
 
     private int begin;
 
