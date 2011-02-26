@@ -14,7 +14,11 @@
  */
 package org.nuxeo.stanbol.temis.engine;
 
+import static org.apache.stanbol.enhancer.servicesapi.rdf.Properties.DC_RELATION;
 import static org.apache.stanbol.enhancer.servicesapi.rdf.Properties.ENHANCER_END;
+import static org.apache.stanbol.enhancer.servicesapi.rdf.Properties.ENHANCER_ENTITY_LABEL;
+import static org.apache.stanbol.enhancer.servicesapi.rdf.Properties.ENHANCER_ENTITY_REFERENCE;
+import static org.apache.stanbol.enhancer.servicesapi.rdf.Properties.ENHANCER_ENTITY_TYPE;
 import static org.apache.stanbol.enhancer.servicesapi.rdf.Properties.ENHANCER_SELECTED_TEXT;
 import static org.apache.stanbol.enhancer.servicesapi.rdf.Properties.ENHANCER_START;
 
@@ -24,8 +28,11 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Dictionary;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 
 import javax.xml.bind.JAXBException;
 import javax.xml.namespace.QName;
@@ -47,6 +54,7 @@ import org.apache.stanbol.enhancer.servicesapi.EngineException;
 import org.apache.stanbol.enhancer.servicesapi.EnhancementEngine;
 import org.apache.stanbol.enhancer.servicesapi.ServiceProperties;
 import org.apache.stanbol.enhancer.servicesapi.helper.EnhancementEngineHelper;
+import org.apache.stanbol.enhancer.servicesapi.rdf.OntologicalClasses;
 import org.nuxeo.stanbol.temis.impl.AnnotationPlan;
 import org.nuxeo.stanbol.temis.impl.ArrayOfAnnotationPlan;
 import org.nuxeo.stanbol.temis.impl.Fault;
@@ -89,6 +97,8 @@ public class TemisEnhancementEngine implements EnhancementEngine, ServicePropert
     public static final Integer defaultOrder = ORDERING_CONTENT_EXTRACTION;
 
     protected static final String TEXT_PLAIN_MIMETYPE = "text/plain";
+
+    public static final String LUXID_NS = "http://www.temis.com/luxid#";
 
     protected String plan;
 
@@ -168,6 +178,7 @@ public class TemisEnhancementEngine implements EnhancementEngine, ServicePropert
             token = connect();
             Holder<Fault> fault = new Holder<Fault>();
             // TODO: read charset from the request instead of hardcoding UTF-8 requirement
+            // TODO: extract ~3 sentences context for each annotation is possible
             String data = IOUtils.toString(ci.getStream(), "UTF-8");
             Holder<Output> output = new Holder<Output>();
             wsPort.annotateString(token, plan, data, SIMPLE_XML_CONSUMER, output, fault);
@@ -175,19 +186,30 @@ public class TemisEnhancementEngine implements EnhancementEngine, ServicePropert
             for (OutputPart part : output.value.getParts()) {
                 if ("DOCUMENT".equals(part.getName()) && "text/xml".equals(part.getMime())) {
                     Doc result = Doc.readFrom(part.getText());
-                    log.info(result.getEntities().size());
                     for (Entity entity : result.getEntities()) {
-                        log.info(entity.getPath());
+                        UriRef entityAnnotation = EnhancementEngineHelper.createEntityEnhancement(ci, this);
+                        String entityPath = entity.getPath();
+                        UriRef entityUri = new UriRef(LUXID_NS + entityPath);
+                        String entityLabel = entityPath.substring(entityPath.lastIndexOf('/') + 1);
+
+                        // add the link to the referred entity
+                        g.add(new TripleImpl(entityAnnotation, ENHANCER_ENTITY_REFERENCE, entityUri));
+                        g.add(new TripleImpl(entityAnnotation, ENHANCER_ENTITY_LABEL, literalFactory
+                                .createTypedLiteral(entityLabel)));
+                        for (UriRef entityType : getStanbolTypes(entityPath)) {
+                            g.add(new TripleImpl(entityAnnotation, ENHANCER_ENTITY_TYPE, entityType));
+                        }
+
+                        // register entity occurrences
                         for (Occurrence occurrence : entity.getOccurrences()) {
-                            log.info(occurrence.getText());
                             UriRef textAnnotation = EnhancementEngineHelper.createTextEnhancement(ci, this);
                             g.add(new TripleImpl(textAnnotation, ENHANCER_SELECTED_TEXT, literalFactory
                                     .createTypedLiteral(occurrence.getText())));
-                            // g.add(new TripleImpl(textAnnotation, DC_TYPE, typeUri));
                             g.add(new TripleImpl(textAnnotation, ENHANCER_START, literalFactory
                                     .createTypedLiteral(occurrence.getBegin())));
                             g.add(new TripleImpl(textAnnotation, ENHANCER_END, literalFactory
                                     .createTypedLiteral(occurrence.getEnd())));
+                            g.add(new TripleImpl(entityAnnotation, DC_RELATION, textAnnotation));
                         }
                     }
                 }
@@ -201,6 +223,26 @@ public class TemisEnhancementEngine implements EnhancementEngine, ServicePropert
                 wsPort.closeSession(token);
             }
         }
+    }
+
+    protected Set<UriRef> getStanbolTypes(String entityPath) {
+        Set<UriRef> types = new TreeSet<UriRef>();
+
+        // TODO: un-hard-code mapping: use a configuration file or an OSGi property
+        Map<String,UriRef> typeMap = new HashMap<String,UriRef>();
+        typeMap.put("/Entity/Person", OntologicalClasses.DBPEDIA_PERSON);
+        typeMap.put("/Entity/Media", OntologicalClasses.DBPEDIA_ORGANISATION);
+        typeMap.put("/Entity/Organisation", OntologicalClasses.DBPEDIA_ORGANISATION);
+        typeMap.put("/Entity/Location", OntologicalClasses.DBPEDIA_PLACE);
+
+        while (entityPath.lastIndexOf('/') != -1) {
+            entityPath = entityPath.substring(0, entityPath.lastIndexOf('/'));
+            UriRef type = typeMap.get(entityPath);
+            if (type != null) {
+                types.add(type);
+            }
+        }
+        return types;
     }
 
     public int canEnhance(ContentItem ci) {
