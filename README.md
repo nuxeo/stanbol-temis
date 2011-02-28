@@ -4,6 +4,9 @@ This project is an OSGi bundle extension for the [Apache Stanbol (Incubating)]
 [1] server to make Stanbol delegate the analysis of a piece of text to an
 instance of the [Temis Luxid Annotation Factory] [2] web service.
 
+Temis is typically used to extract occurrences of named entities in the body of
+the text, for instance: places, organizations and people.
+
 [1]: http://incubator.apache.org/stanbol
 [2]: http://www.temis.com
 
