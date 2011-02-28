@@ -15,6 +15,7 @@
 package org.nuxeo.stanbol.temis.engine;
 
 import static org.apache.stanbol.enhancer.servicesapi.rdf.Properties.DC_RELATION;
+import static org.apache.stanbol.enhancer.servicesapi.rdf.Properties.DC_TYPE;
 import static org.apache.stanbol.enhancer.servicesapi.rdf.Properties.ENHANCER_END;
 import static org.apache.stanbol.enhancer.servicesapi.rdf.Properties.ENHANCER_ENTITY_LABEL;
 import static org.apache.stanbol.enhancer.servicesapi.rdf.Properties.ENHANCER_ENTITY_REFERENCE;
@@ -196,13 +197,17 @@ public class TemisEnhancementEngine implements EnhancementEngine, ServicePropert
                         g.add(new TripleImpl(entityAnnotation, ENHANCER_ENTITY_REFERENCE, entityUri));
                         g.add(new TripleImpl(entityAnnotation, ENHANCER_ENTITY_LABEL, literalFactory
                                 .createTypedLiteral(entityLabel)));
-                        for (UriRef entityType : getStanbolTypes(entityPath)) {
+                        Set<UriRef> stanbolTypes = getStanbolTypes(entityPath);
+                        for (UriRef entityType : stanbolTypes) {
                             g.add(new TripleImpl(entityAnnotation, ENHANCER_ENTITY_TYPE, entityType));
                         }
 
                         // register entity occurrences
                         for (Occurrence occurrence : entity.getOccurrences()) {
                             UriRef textAnnotation = EnhancementEngineHelper.createTextEnhancement(ci, this);
+                            for (UriRef entityType : stanbolTypes) {
+                                g.add(new TripleImpl(textAnnotation, DC_TYPE, entityType));
+                            }
                             g.add(new TripleImpl(textAnnotation, ENHANCER_SELECTED_TEXT, literalFactory
                                     .createTypedLiteral(occurrence.getText())));
                             g.add(new TripleImpl(textAnnotation, ENHANCER_START, literalFactory
