@@ -173,11 +173,6 @@
 			<artifactId>org.apache.stanbol.commons.web.home</artifactId>
 			<version>0.9-SNAPSHOT</version>
 		</bundle>
-		<bundle>
-			<groupId>org.apache.stanbol</groupId>
-			<artifactId>org.apache.stanbol.commons.web.sparql</artifactId>
-			<version>0.9-SNAPSHOT</version>
-		</bundle>
 	</startLevel>
 
 	<!-- Clerezza storage and sparql infrastructure -->
