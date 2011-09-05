@@ -10,6 +10,10 @@ the text, for instance: places, organizations and people.
 [1]: http://incubator.apache.org/stanbol
 [2]: http://www.temis.com
 
+## License
+
+This connector is realeased under the terms of the ASL 2.0.
+
 ## Building and deploying
 
 To build the jar and run the tests:
