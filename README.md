@@ -33,6 +33,10 @@ of your Luxid instance. Typically the URL looks like:
 
     http://localhost:8080/system/console/configMgr/org.nuxeo.stanbol.temis.TemisEnhancementEngine
 
+The URL of the Luxid webservice typically has the following form:
+
+    http://example.com/LuxidWS/services/Annotation?wsdl
+
 
 ## Running the engine from a REST client
 
