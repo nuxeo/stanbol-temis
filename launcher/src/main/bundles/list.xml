@@ -15,9 +15,6 @@
   See the License for the specific language governing permissions and
   limitations under the License.
 -->
-  <!--
-		List of initial bundles for the Stanbol Sling-based standalone launcher.
-	-->
 <bundles>
 
   <!-- *********************************************************************
@@ -388,11 +385,13 @@
       <artifactId>org.apache.stanbol.data.opennlp.lang.en</artifactId>
       <version>1.0.0-incubating</version>
     </bundle>
+    <!--
     <bundle>
       <groupId>org.apache.stanbol</groupId>
       <artifactId>org.apache.stanbol.data.sites.dbpedia.default</artifactId>
       <version>1.0.1-incubating</version>
     </bundle>
+    -->
   </startLevel>
 
   <!-- *********************************************************************
@@ -418,14 +417,6 @@
       <version>0.9.0-incubating-SNAPSHOT</version>
     </bundle>
   </startLevel>
-  <!-- Clerezza based SPARQL query engine
-  <startLevel level="20">
-    <bundle>
-      <groupId>org.apache.stanbol</groupId>
-      <artifactId>org.apache.stanbol.enhancer.clerezza.sparql</artifactId>
-      <version>0.9.0-incubating-SNAPSHOT</version>
-    </bundle>
-  </startLevel> -->
 
   <!-- Stanbol Entityhub infrastructure and required libraries-->
   <startLevel level="20">
@@ -465,14 +456,6 @@
       <version>0.9.0-incubating-SNAPSHOT</version>
     </bundle>
   </startLevel>
-  <!-- FactStore
-  <startLevel level="20">
-    <bundle>
-      <groupId>org.apache.stanbol</groupId>
-      <artifactId>org.apache.stanbol.factstore</artifactId>
-      <version>0.9.0-incubating-SNAPSHOT</version>
-    </bundle>
-  </startLevel> -->
 
   <!-- Stanbol Web Fragments -->
   <startLevel level="21">

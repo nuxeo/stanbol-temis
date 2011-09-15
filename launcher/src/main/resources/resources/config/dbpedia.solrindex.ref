@@ -1,0 +1,4 @@
+#Tue Sep 13 19:54:39 CEST 2011
+Name=SolrIndex for dbpedia
+Description=DBpedia.org 
+Index-Archive=dbpedia.solrindex.zip
