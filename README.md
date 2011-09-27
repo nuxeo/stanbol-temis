@@ -27,6 +27,19 @@ To build and deploy on a live Stanbol instance running on
 
     mvn install -o -DskipTests -PinstallBundle \
         -Dsling.url=http://localhost:8080/system/console
+        
+Alternatively you can build the `stanbol-temis` launcher jar in
+in the `launcher` subfolder and start it with
+`java -jar stanbol-temis-*.jar`.
+
+This launcher is configured to use a pre-configured dbpedia index
+available at:
+
+    http://dev.iks-project.eu/downloads/stanbol-indices/dbpedia-3.7/dbpedia.solrindex.zip
+
+Just download this zip archive and put it under the `sling/datafiles/`
+folder of your instance. Stanbol will decompress it under `sling/entityhub/`
+automatically when it needs it.
 
 Then go to the OSGi system console to set the URI and credentials
 of your Luxid instance. Typically the URL looks like:
