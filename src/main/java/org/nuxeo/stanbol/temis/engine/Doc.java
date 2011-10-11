@@ -16,6 +16,7 @@ package org.nuxeo.stanbol.temis.engine;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 
 import javax.xml.bind.JAXBContext;
@@ -41,7 +42,8 @@ public class Doc {
     }
 
     public static Doc readFrom(String xmlPayload) throws JAXBException {
-        return readFrom(new ByteArrayInputStream(xmlPayload.getBytes()));
+        return readFrom(new ByteArrayInputStream(
+                xmlPayload.getBytes(Charset.forName("UTF-8"))));
     }
 
     public static Doc readFrom(InputStream xmlStream) throws JAXBException {

@@ -22,11 +22,13 @@ import static org.apache.stanbol.enhancer.servicesapi.rdf.Properties.ENHANCER_EN
 import static org.apache.stanbol.enhancer.servicesapi.rdf.Properties.ENHANCER_ENTITY_TYPE;
 import static org.apache.stanbol.enhancer.servicesapi.rdf.Properties.ENHANCER_SELECTED_TEXT;
 import static org.apache.stanbol.enhancer.servicesapi.rdf.Properties.ENHANCER_START;
+import static org.apache.stanbol.enhancer.servicesapi.rdf.Properties.ENHANCER_SELECTION_CONTEXT;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Dictionary;
 import java.util.HashMap;
@@ -180,9 +182,9 @@ public class TemisEnhancementEngine implements EnhancementEngine, ServicePropert
             Holder<Fault> fault = new Holder<Fault>();
             // TODO: read charset from the request instead of hardcoding UTF-8 requirement
             // TODO: extract ~3 sentences context for each annotation is possible
-            String data = IOUtils.toString(ci.getStream(), "UTF-8");
+            String text = IOUtils.toString(ci.getStream(), "UTF-8");
             Holder<Output> output = new Holder<Output>();
-            wsPort.annotateString(token, plan, data, SIMPLE_XML_CONSUMER, output, fault);
+            wsPort.annotateString(token, plan, text, SIMPLE_XML_CONSUMER, output, fault);
             handleFault(fault);
             for (OutputPart part : output.value.getParts()) {
                 if ("DOCUMENT".equals(part.getName()) && "text/xml".equals(part.getMime())) {
@@ -208,12 +210,16 @@ public class TemisEnhancementEngine implements EnhancementEngine, ServicePropert
                             for (UriRef entityType : stanbolTypes) {
                                 g.add(new TripleImpl(textAnnotation, DC_TYPE, entityType));
                             }
+                            String context = findContext(text, occurrence.getBegin(), occurrence.getEnd());
+                            String selectedText = occurrence.getText();
                             g.add(new TripleImpl(textAnnotation, ENHANCER_SELECTED_TEXT, literalFactory
-                                    .createTypedLiteral(occurrence.getText())));
+                                    .createTypedLiteral(selectedText)));
+                            g.add(new TripleImpl(textAnnotation, ENHANCER_SELECTION_CONTEXT, literalFactory
+                                    .createTypedLiteral(context)));
                             g.add(new TripleImpl(textAnnotation, ENHANCER_START, literalFactory
-                                    .createTypedLiteral(occurrence.getBegin())));
+                                    .createTypedLiteral(context.indexOf(selectedText))));
                             g.add(new TripleImpl(textAnnotation, ENHANCER_END, literalFactory
-                                    .createTypedLiteral(occurrence.getEnd())));
+                                    .createTypedLiteral(context.indexOf(selectedText) + selectedText.length())));
                             g.add(new TripleImpl(entityAnnotation, DC_RELATION, textAnnotation));
                         }
                     }
@@ -228,6 +234,36 @@ public class TemisEnhancementEngine implements EnhancementEngine, ServicePropert
                 wsPort.closeSession(token);
             }
         }
+    }
+
+    protected String findContext(String text, int begin, int end) {
+        String prefix = shorten(text.substring(0, begin), 30, true);
+        String suffix = shorten(text.substring(end), 30, false);
+        String selected = text.substring(begin, end);
+        return String.format("%s %s %s", prefix, selected, suffix);
+    }
+
+    protected String shorten(String content, int maxWords, boolean reverse) {
+        if (content == null) {
+            return "";
+        }
+        List<String> tokens = Arrays.asList(content.split(" "));
+        if (tokens.size() > maxWords) {
+            if (reverse) {
+                Collections.reverse(tokens);
+            }
+            tokens = new ArrayList<String>(tokens.subList(0, maxWords));
+            if ((!reverse && content.startsWith(" "))
+                    || (reverse && content.endsWith(" "))) {
+                // re-add missing space removed by split
+                tokens.add(0, " ");
+            }
+            if (reverse) {
+                Collections.reverse(tokens);
+            }
+            return StringUtils.join(tokens, " ");
+        }
+        return content;
     }
 
     protected Set<UriRef> getStanbolTypes(String entityPath) {
