@@ -237,6 +237,12 @@ public class TemisEnhancementEngine implements EnhancementEngine, ServicePropert
     }
 
     protected String findContext(String text, int begin, int end) {
+        if (begin < 0) {
+            begin = 0;
+        }
+        if (text.length() < end) {
+            end = text.length();
+        }
         String prefix = shorten(text.substring(0, begin), 30, true);
         String suffix = shorten(text.substring(end), 30, false);
         String selected = text.substring(begin, end);
