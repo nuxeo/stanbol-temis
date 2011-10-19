@@ -280,6 +280,7 @@ public class TemisEnhancementEngine implements EnhancementEngine, ServicePropert
         typeMap.put("/Entity/Person", OntologicalClasses.DBPEDIA_PERSON);
         typeMap.put("/Entity/Media", OntologicalClasses.DBPEDIA_ORGANISATION);
         typeMap.put("/Entity/Organisation", OntologicalClasses.DBPEDIA_ORGANISATION);
+        typeMap.put("/Entity/Company", OntologicalClasses.DBPEDIA_ORGANISATION);
         typeMap.put("/Entity/Location", OntologicalClasses.DBPEDIA_PLACE);
 
         while (entityPath.lastIndexOf('/') != -1) {
