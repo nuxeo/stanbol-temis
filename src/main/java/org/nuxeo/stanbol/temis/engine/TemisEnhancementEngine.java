@@ -111,6 +111,12 @@ public class TemisEnhancementEngine implements EnhancementEngine, ServicePropert
 
     protected TemisWebServicePortType wsPort;
 
+    @Override
+    public String getName() {
+        // TODO: turn into a configuration factory and make this a property of the instance
+        return "temis";
+    }
+
     protected void activate(ComponentContext ce) throws MalformedURLException,
                                                 TemisEnhancementEngineException {
         @SuppressWarnings("unchecked")
@@ -218,8 +224,9 @@ public class TemisEnhancementEngine implements EnhancementEngine, ServicePropert
                                     .createTypedLiteral(context)));
                             g.add(new TripleImpl(textAnnotation, ENHANCER_START, literalFactory
                                     .createTypedLiteral(context.indexOf(selectedText))));
-                            g.add(new TripleImpl(textAnnotation, ENHANCER_END, literalFactory
-                                    .createTypedLiteral(context.indexOf(selectedText) + selectedText.length())));
+                            g.add(new TripleImpl(textAnnotation, ENHANCER_END,
+                                    literalFactory.createTypedLiteral(context.indexOf(selectedText)
+                                                                      + selectedText.length())));
                             g.add(new TripleImpl(entityAnnotation, DC_RELATION, textAnnotation));
                         }
                     }
@@ -259,8 +266,7 @@ public class TemisEnhancementEngine implements EnhancementEngine, ServicePropert
                 Collections.reverse(tokens);
             }
             tokens = new ArrayList<String>(tokens.subList(0, maxWords));
-            if ((!reverse && content.startsWith(" "))
-                    || (reverse && content.endsWith(" "))) {
+            if ((!reverse && content.startsWith(" ")) || (reverse && content.endsWith(" "))) {
                 // re-add missing space removed by split
                 tokens.add(0, " ");
             }
@@ -307,4 +313,5 @@ public class TemisEnhancementEngine implements EnhancementEngine, ServicePropert
         return Collections.unmodifiableMap(Collections.singletonMap(ENHANCEMENT_ENGINE_ORDERING,
             (Object) defaultOrder));
     }
+
 }
