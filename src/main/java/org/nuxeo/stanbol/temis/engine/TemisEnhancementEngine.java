@@ -65,6 +65,7 @@ import org.nuxeo.stanbol.temis.impl.Output;
 import org.nuxeo.stanbol.temis.impl.OutputPart;
 import org.nuxeo.stanbol.temis.impl.TemisWebService;
 import org.nuxeo.stanbol.temis.impl.TemisWebServicePortType;
+import org.osgi.service.cm.ConfigurationException;
 import org.osgi.service.component.ComponentContext;
 
 /**
@@ -117,18 +118,34 @@ public class TemisEnhancementEngine implements EnhancementEngine, ServicePropert
         return "temis";
     }
 
+    /**
+     * Load a required property value from OSGi context with fall-back on environment variable.
+     *
+     * @throws ConfigurationException
+     *             if no configuration is found in either contexts.
+     */
+    protected String getFromPropertiesOrEnv(Dictionary<String,String> properties, String propertyName) throws ConfigurationException {
+        String envVariableName = propertyName.replaceAll("\\.", "_").toUpperCase();
+        String propertyValue = System.getenv(envVariableName);
+        if (properties.get(propertyName) != null) {
+            propertyValue = properties.get(propertyName);
+        }
+        if (propertyValue == null) {
+            throw new ConfigurationException(propertyName, String.format("%s is a required property",
+                propertyName));
+        }
+        return propertyValue;
+    }
+
     protected void activate(ComponentContext ce) throws MalformedURLException,
-                                                TemisEnhancementEngineException {
+                                                TemisEnhancementEngineException,
+                                                ConfigurationException {
         @SuppressWarnings("unchecked")
         Dictionary<String,String> properties = ce.getProperties();
-        String urlString = properties.get(SERVICE_WSDL_URL_PROPERTY);
-        id = properties.get(SERVICE_ACCOUNT_ID_PROPERTY);
-        password = properties.get(SERVICE_ACCOUNT_PASSWORD_PROPERTY);
-        plan = properties.get(SERVICE_ANNOTATION_PLAN_PROPERTY);
-        if (urlString == null || id == null || password == null || plan == null) {
-            throw new TemisEnhancementEngineException(
-                    "Cannot activate TemisEnhancementEngine without configuration parameters");
-        }
+        String urlString = getFromPropertiesOrEnv(properties, SERVICE_WSDL_URL_PROPERTY);
+        id = getFromPropertiesOrEnv(properties, SERVICE_ACCOUNT_ID_PROPERTY);
+        password = getFromPropertiesOrEnv(properties, SERVICE_ACCOUNT_PASSWORD_PROPERTY);
+        plan = getFromPropertiesOrEnv(properties, SERVICE_ANNOTATION_PLAN_PROPERTY);
 
         // check the connection to fail early in case of bad configuration parameters
         TemisWebService tws = new TemisWebService(new URL(urlString), SERVICE_NAME);
