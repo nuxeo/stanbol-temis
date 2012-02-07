@@ -27,7 +27,7 @@ To build and deploy on a live Stanbol instance running on
 
     mvn install -o -DskipTests -PinstallBundle \
         -Dsling.url=http://localhost:8080/system/console
-        
+
 Alternatively you can build the `stanbol-temis` launcher jar in
 in the `launcher` subfolder and start it with
 `java -jar stanbol-temis-*.jar`.
