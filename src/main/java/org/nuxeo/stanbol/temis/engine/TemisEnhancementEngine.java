@@ -21,8 +21,8 @@ import static org.apache.stanbol.enhancer.servicesapi.rdf.Properties.ENHANCER_EN
 import static org.apache.stanbol.enhancer.servicesapi.rdf.Properties.ENHANCER_ENTITY_REFERENCE;
 import static org.apache.stanbol.enhancer.servicesapi.rdf.Properties.ENHANCER_ENTITY_TYPE;
 import static org.apache.stanbol.enhancer.servicesapi.rdf.Properties.ENHANCER_SELECTED_TEXT;
-import static org.apache.stanbol.enhancer.servicesapi.rdf.Properties.ENHANCER_START;
 import static org.apache.stanbol.enhancer.servicesapi.rdf.Properties.ENHANCER_SELECTION_CONTEXT;
+import static org.apache.stanbol.enhancer.servicesapi.rdf.Properties.ENHANCER_START;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -65,6 +65,7 @@ import org.nuxeo.stanbol.temis.impl.Output;
 import org.nuxeo.stanbol.temis.impl.OutputPart;
 import org.nuxeo.stanbol.temis.impl.TemisWebService;
 import org.nuxeo.stanbol.temis.impl.TemisWebServicePortType;
+import org.osgi.framework.Constants;
 import org.osgi.service.cm.ConfigurationException;
 import org.osgi.service.component.ComponentContext;
 
@@ -94,6 +95,9 @@ public class TemisEnhancementEngine implements EnhancementEngine, ServicePropert
     @Property(value = {"Entities"})
     public static final String SERVICE_ANNOTATION_PLAN_PROPERTY = "stanbol.temis.service.annotation.plan";
 
+    @Property(value="temis")
+    public static final String NAME_PROPERTY = EnhancementEngine.PROPERTY_NAME;
+
     /**
      * The default value for the Execution of this Engine. Currently set to
      * {@link ServiceProperties#ORDERING_CONTENT_EXTRACTION}
@@ -104,18 +108,19 @@ public class TemisEnhancementEngine implements EnhancementEngine, ServicePropert
 
     public static final String LUXID_NS = "http://www.temis.com/luxid#";
 
-    protected String plan;
+    protected String annotationPlan;
 
-    protected String id;
+    protected String accountId;
 
-    protected String password;
+    protected String accountPassword;
+    
+    protected String name;
 
     protected TemisWebServicePortType wsPort;
 
     @Override
     public String getName() {
-        // TODO: turn into a configuration factory and make this a property of the instance
-        return "temis";
+        return name;
     }
 
     /**
@@ -129,7 +134,7 @@ public class TemisEnhancementEngine implements EnhancementEngine, ServicePropert
         String propertyValue = System.getenv(envVariableName);
         if (properties.get(propertyName) != null) {
             propertyValue = properties.get(propertyName);
-        }
+        }   
         if (propertyValue == null) {
             throw new ConfigurationException(propertyName, String.format("%s is a required property",
                 propertyName));
@@ -143,16 +148,17 @@ public class TemisEnhancementEngine implements EnhancementEngine, ServicePropert
         @SuppressWarnings("unchecked")
         Dictionary<String,String> properties = ce.getProperties();
         String urlString = getFromPropertiesOrEnv(properties, SERVICE_WSDL_URL_PROPERTY);
-        id = getFromPropertiesOrEnv(properties, SERVICE_ACCOUNT_ID_PROPERTY);
-        password = getFromPropertiesOrEnv(properties, SERVICE_ACCOUNT_PASSWORD_PROPERTY);
-        plan = getFromPropertiesOrEnv(properties, SERVICE_ANNOTATION_PLAN_PROPERTY);
+        accountId = getFromPropertiesOrEnv(properties, SERVICE_ACCOUNT_ID_PROPERTY);
+        accountPassword = getFromPropertiesOrEnv(properties, SERVICE_ACCOUNT_PASSWORD_PROPERTY);
+        annotationPlan = getFromPropertiesOrEnv(properties, SERVICE_ANNOTATION_PLAN_PROPERTY);
+        name = properties.get(PROPERTY_NAME);
 
         // check the connection to fail early in case of bad configuration parameters
         TemisWebService tws = new TemisWebService(new URL(urlString), SERVICE_NAME);
         wsPort = tws.getWebAnnotationPort();
         String sessionId = connect();
         try {
-            // check that the requested plan is available to the authenticated user
+            // check that the requested annotationPlan is available to the authenticated user
             Holder<ArrayOfAnnotationPlan> plans = new Holder<ArrayOfAnnotationPlan>();
             Holder<Fault> fault = new Holder<Fault>();
             wsPort.getPlans(sessionId, plans, fault);
@@ -160,7 +166,7 @@ public class TemisEnhancementEngine implements EnhancementEngine, ServicePropert
             boolean foundPlan = false;
             List<String> availablePlanNames = new ArrayList<String>();
             for (AnnotationPlan availablePlan : plans.value.getReturn()) {
-                if (availablePlan.getName().equals(plan)) {
+                if (availablePlan.getName().equals(annotationPlan)) {
                     foundPlan = true;
                     break;
                 }
@@ -168,7 +174,7 @@ public class TemisEnhancementEngine implements EnhancementEngine, ServicePropert
             }
             if (!foundPlan) {
                 throw new TemisEnhancementEngineException(String.format(
-                    "The requested plan '%s' is does not belong to the list of available plans: '%s'", plan,
+                    "The requested annotationPlan '%s' is does not belong to the list of available plans: '%s'", annotationPlan,
                     StringUtils.join(availablePlanNames, ", ")));
             }
         } finally {
@@ -178,13 +184,13 @@ public class TemisEnhancementEngine implements EnhancementEngine, ServicePropert
 
     protected void deactivate(ComponentContext ce) {
         wsPort = null;
-        plan = null;
+        annotationPlan = null;
     }
 
     public String connect() throws TemisEnhancementEngineException {
         Holder<String> token = new Holder<String>();
         Holder<Fault> fault = new Holder<Fault>();
-        wsPort.authenticate(id, password, token, fault);
+        wsPort.authenticate(accountId, accountPassword, token, fault);
         handleFault(fault);
         return token.value;
     }
@@ -207,7 +213,7 @@ public class TemisEnhancementEngine implements EnhancementEngine, ServicePropert
             // TODO: extract ~3 sentences context for each annotation is possible
             String text = IOUtils.toString(ci.getStream(), "UTF-8");
             Holder<Output> output = new Holder<Output>();
-            wsPort.annotateString(token, plan, text, SIMPLE_XML_CONSUMER, output, fault);
+            wsPort.annotateString(token, annotationPlan, text, SIMPLE_XML_CONSUMER, output, fault);
             handleFault(fault);
             for (OutputPart part : output.value.getParts()) {
                 if ("DOCUMENT".equals(part.getName()) && "text/xml".equals(part.getMime())) {
