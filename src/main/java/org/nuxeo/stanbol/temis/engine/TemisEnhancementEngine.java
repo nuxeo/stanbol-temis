@@ -65,7 +65,6 @@ import org.nuxeo.stanbol.temis.impl.Output;
 import org.nuxeo.stanbol.temis.impl.OutputPart;
 import org.nuxeo.stanbol.temis.impl.TemisWebService;
 import org.nuxeo.stanbol.temis.impl.TemisWebServicePortType;
-import org.osgi.framework.Constants;
 import org.osgi.service.cm.ConfigurationException;
 import org.osgi.service.component.ComponentContext;
 
