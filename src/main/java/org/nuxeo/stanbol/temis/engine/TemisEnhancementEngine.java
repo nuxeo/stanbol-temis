@@ -50,12 +50,15 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.felix.scr.annotations.Component;
+import org.apache.felix.scr.annotations.ConfigurationPolicy;
+import org.apache.felix.scr.annotations.Properties;
 import org.apache.felix.scr.annotations.Property;
 import org.apache.felix.scr.annotations.Service;
 import org.apache.stanbol.enhancer.servicesapi.ContentItem;
 import org.apache.stanbol.enhancer.servicesapi.EngineException;
 import org.apache.stanbol.enhancer.servicesapi.EnhancementEngine;
 import org.apache.stanbol.enhancer.servicesapi.ServiceProperties;
+import org.apache.stanbol.enhancer.servicesapi.helper.AbstractEnhancementEngine;
 import org.apache.stanbol.enhancer.servicesapi.helper.EnhancementEngineHelper;
 import org.apache.stanbol.enhancer.servicesapi.rdf.OntologicalClasses;
 import org.nuxeo.stanbol.temis.impl.AnnotationPlan;
@@ -65,16 +68,24 @@ import org.nuxeo.stanbol.temis.impl.Output;
 import org.nuxeo.stanbol.temis.impl.OutputPart;
 import org.nuxeo.stanbol.temis.impl.TemisWebService;
 import org.nuxeo.stanbol.temis.impl.TemisWebServicePortType;
+import org.osgi.framework.Constants;
 import org.osgi.service.cm.ConfigurationException;
 import org.osgi.service.component.ComponentContext;
 
 /**
  * Enhancement engine implementation that delegate the analysis work to a Temis Luxid Annotation Factory
  * service.
+ * 
+ * The connection properties can be looked up from environment variables (upper case OSGi property names with
+ * '_' instead of '.') if the properties are left undefined in the OSGi configuration.
  */
-@Component(immediate = false, metatype = true, label = "%stanbol.TemisEnhancementEngine.name", description = "%stanbol.TemisEnhancementEngine.description")
+@Component(configurationFactory = true, immediate = true, metatype = true, policy = ConfigurationPolicy.REQUIRE, specVersion = "1.1", inherit = true, label = "%stanbol.TemisEnhancementEngine.name", description = "%stanbol.TemisEnhancementEngine.description")
 @Service
-public class TemisEnhancementEngine implements EnhancementEngine, ServiceProperties {
+@Properties(value = {@Property(name = EnhancementEngine.PROPERTY_NAME, value = "temis"),
+                     @Property(name = Constants.SERVICE_RANKING, intValue = 0)})
+public class TemisEnhancementEngine extends
+        AbstractEnhancementEngine<ConfigurationException,RuntimeException> implements EnhancementEngine,
+        ServiceProperties {
 
     public static final String SIMPLE_XML_CONSUMER = "SimpleXML";
 
@@ -91,11 +102,8 @@ public class TemisEnhancementEngine implements EnhancementEngine, ServicePropert
     @Property
     public static final String SERVICE_ACCOUNT_PASSWORD_PROPERTY = "stanbol.temis.service.account.password";
 
-    @Property(value = {"Entities"})
+    @Property
     public static final String SERVICE_ANNOTATION_PLAN_PROPERTY = "stanbol.temis.service.annotation.plan";
-
-    @Property(value="temis")
-    public static final String NAME_PROPERTY = EnhancementEngine.PROPERTY_NAME;
 
     /**
      * The default value for the Execution of this Engine. Currently set to
@@ -112,19 +120,12 @@ public class TemisEnhancementEngine implements EnhancementEngine, ServicePropert
     protected String accountId;
 
     protected String accountPassword;
-    
-    protected String name;
 
     protected TemisWebServicePortType wsPort;
 
-    @Override
-    public String getName() {
-        return name;
-    }
-
     /**
      * Load a required property value from OSGi context with fall-back on environment variable.
-     *
+     * 
      * @throws ConfigurationException
      *             if no configuration is found in either contexts.
      */
@@ -133,7 +134,7 @@ public class TemisEnhancementEngine implements EnhancementEngine, ServicePropert
         String propertyValue = System.getenv(envVariableName);
         if (properties.get(propertyName) != null) {
             propertyValue = properties.get(propertyName);
-        }   
+        }
         if (propertyValue == null) {
             throw new ConfigurationException(propertyName, String.format("%s is a required property",
                 propertyName));
@@ -141,22 +142,22 @@ public class TemisEnhancementEngine implements EnhancementEngine, ServicePropert
         return propertyValue;
     }
 
-    protected void activate(ComponentContext ce) throws MalformedURLException,
-                                                TemisEnhancementEngineException,
-                                                ConfigurationException {
+    @Override
+    protected void activate(ComponentContext ce) throws ConfigurationException {
+        super.activate(ce);
         @SuppressWarnings("unchecked")
         Dictionary<String,String> properties = ce.getProperties();
         String urlString = getFromPropertiesOrEnv(properties, SERVICE_WSDL_URL_PROPERTY);
         accountId = getFromPropertiesOrEnv(properties, SERVICE_ACCOUNT_ID_PROPERTY);
         accountPassword = getFromPropertiesOrEnv(properties, SERVICE_ACCOUNT_PASSWORD_PROPERTY);
         annotationPlan = getFromPropertiesOrEnv(properties, SERVICE_ANNOTATION_PLAN_PROPERTY);
-        name = properties.get(PROPERTY_NAME);
 
         // check the connection to fail early in case of bad configuration parameters
-        TemisWebService tws = new TemisWebService(new URL(urlString), SERVICE_NAME);
-        wsPort = tws.getWebAnnotationPort();
-        String sessionId = connect();
+        String sessionId = null;
         try {
+            TemisWebService tws = new TemisWebService(new URL(urlString), SERVICE_NAME);
+            wsPort = tws.getWebAnnotationPort();
+            sessionId = connect();
             // check that the requested annotationPlan is available to the authenticated user
             Holder<ArrayOfAnnotationPlan> plans = new Holder<ArrayOfAnnotationPlan>();
             Holder<Fault> fault = new Holder<Fault>();
@@ -173,15 +174,25 @@ public class TemisEnhancementEngine implements EnhancementEngine, ServicePropert
             }
             if (!foundPlan) {
                 throw new TemisEnhancementEngineException(String.format(
-                    "The requested annotationPlan '%s' is does not belong to the list of available plans: '%s'", annotationPlan,
+                    "The requested annotationPlan '%s' is does not belong to"
+                            + " the list of available plans: '%s'", annotationPlan,
                     StringUtils.join(availablePlanNames, ", ")));
             }
+        } catch (TemisEnhancementEngineException e) {
+            log.error(e, e);
+            throw new ConfigurationException(SERVICE_WSDL_URL_PROPERTY, e.getMessage());
+        } catch (MalformedURLException e) {
+            throw new ConfigurationException(SERVICE_WSDL_URL_PROPERTY, e.getMessage());
         } finally {
-            wsPort.closeSession(sessionId);
+            if (sessionId != null) {
+                wsPort.closeSession(sessionId);
+            }
         }
     }
 
+    @Override
     protected void deactivate(ComponentContext ce) {
+        super.deactivate(ce);
         wsPort = null;
         annotationPlan = null;
     }
