@@ -28,9 +28,12 @@ To build and deploy on a live Stanbol instance running on
     mvn install -o -DskipTests -PinstallBundle \
         -Dsling.url=http://localhost:8080/system/console
 
-Alternatively you can build the `stanbol-temis` launcher jar in
-in the `launcher` subfolder and start it with
-`java -jar stanbol-temis-*.jar`.
+Alternatively you can build the `stanbol-temis` launcher jar in in the
+`launcher` subfolder and start it with:
+
+    cd launcher
+    mvn install
+    java -jar target/stanbol-temis-launcher-*.jar -p 8080
 
 This launcher is configured to use a pre-configured dbpedia index
 available at:
@@ -41,14 +44,19 @@ Just download this zip archive and put it under the `sling/datafiles/`
 folder of your instance. Stanbol will decompress it under `sling/entityhub/`
 automatically when it needs it.
 
-Then go to the OSGi system console to set the URI and credentials
-of your Luxid instance. Typically the URL looks like:
+Then configure a new named instance of the `TemisEnhancementEngine` and
+set Luxid service endpoint and credentials by going to the OSGi system
+console. Typically the URL of the configuration factory looks like:
 
     http://localhost:8080/system/console/configMgr/org.nuxeo.stanbol.temis.TemisEnhancementEngine
 
-The URL of the Luxid webservice typically has the following form:
+If you would rather avoid keeping the credentials in the OSGi configuration you
+can alternatively use the following environment variables:
 
-    http://example.com/LuxidWS/services/Annotation?wsdl
+    export STANBOL_TEMIS_SERVICE_WSDL_URL=http://examples.com/LuxidWS/services/Annotation?wsdl
+    export STANBOL_TEMIS_SERVICE_ACCOUNT_ID=myuserid
+    export STANBOL_TEMIS_SERVICE_ACCOUNT_PASSWORD=mypassword
+    export STANBOL_TEMIS_SERVICE_ANNOTATION_PLAN=Entities
 
 
 ## Running the engine from a REST client
