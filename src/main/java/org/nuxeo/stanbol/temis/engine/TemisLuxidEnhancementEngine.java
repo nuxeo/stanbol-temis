@@ -83,27 +83,27 @@ import org.osgi.service.component.ComponentContext;
 @Service
 @Properties(value = {@Property(name = EnhancementEngine.PROPERTY_NAME, value = "temis"),
                      @Property(name = Constants.SERVICE_RANKING, intValue = 0)})
-public class TemisEnhancementEngine extends
+public class TemisLuxidEnhancementEngine extends
         AbstractEnhancementEngine<ConfigurationException,RuntimeException> implements EnhancementEngine,
         ServiceProperties {
 
     public static final String SIMPLE_XML_CONSUMER = "SimpleXML";
 
-    public static final Log log = LogFactory.getLog(TemisEnhancementEngine.class);
+    public static final Log log = LogFactory.getLog(TemisLuxidEnhancementEngine.class);
 
     public static final QName SERVICE_NAME = new QName("http://luxid.temis.com/ws", "TemisWebService");
 
     @Property
-    public static final String SERVICE_WSDL_URL_PROPERTY = "stanbol.temis.service.wsdl.url";
+    public static final String SERVICE_WSDL_URL_PROPERTY = "stanbol.temis.luxid.service.wsdl.url";
 
     @Property
-    public static final String SERVICE_ACCOUNT_ID_PROPERTY = "stanbol.temis.service.account.id";
+    public static final String SERVICE_ACCOUNT_ID_PROPERTY = "stanbol.temis.luxid.service.account.id";
 
     @Property
-    public static final String SERVICE_ACCOUNT_PASSWORD_PROPERTY = "stanbol.temis.service.account.password";
+    public static final String SERVICE_ACCOUNT_PASSWORD_PROPERTY = "stanbol.temis.luxid.service.account.password";
 
     @Property
-    public static final String SERVICE_ANNOTATION_PLAN_PROPERTY = "stanbol.temis.service.annotation.plan";
+    public static final String SERVICE_ANNOTATION_PLAN_PROPERTY = "stanbol.temis.luxid.service.annotation.plan";
 
     /**
      * The default value for the Execution of this Engine. Currently set to
@@ -132,10 +132,10 @@ public class TemisEnhancementEngine extends
     protected String getFromPropertiesOrEnv(Dictionary<String,String> properties, String propertyName) throws ConfigurationException {
         String envVariableName = propertyName.replaceAll("\\.", "_").toUpperCase();
         String propertyValue = System.getenv(envVariableName);
-        if (properties.get(propertyName) != null) {
+        if (properties.get(propertyName) != null && !properties.get(propertyName).trim().isEmpty()) {
             propertyValue = properties.get(propertyName);
         }
-        if (propertyValue == null) {
+        if (propertyValue == null || propertyValue.trim().isEmpty()) {
             throw new ConfigurationException(propertyName, String.format("%s is a required property",
                 propertyName));
         }
