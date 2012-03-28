@@ -53,10 +53,10 @@ console. Typically the URL of the configuration factory looks like:
 If you would rather avoid keeping the credentials in the OSGi configuration you
 can alternatively use the following environment variables:
 
-    export STANBOL_TEMIS_SERVICE_WSDL_URL=http://examples.com/LuxidWS/services/Annotation?wsdl
-    export STANBOL_TEMIS_SERVICE_ACCOUNT_ID=myuserid
-    export STANBOL_TEMIS_SERVICE_ACCOUNT_PASSWORD=mypassword
-    export STANBOL_TEMIS_SERVICE_ANNOTATION_PLAN=Entities
+    export STANBOL_TEMIS_LUXID_SERVICE_WSDL_URL=http://examples.com/LuxidWS/services/Annotation?wsdl
+    export STANBOL_TEMIS_LUXID_SERVICE_ACCOUNT_ID=myuserid
+    export STANBOL_TEMIS_LUXID_SERVICE_ACCOUNT_PASSWORD=mypassword
+    export STANBOL_TEMIS_LUXID_SERVICE_ANNOTATION_PLAN=Entities
 
 
 ## Running the engine from a REST client
