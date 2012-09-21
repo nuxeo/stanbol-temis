@@ -32,10 +32,10 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Dictionary;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeSet;
 
 import javax.xml.bind.JAXBException;
 import javax.xml.namespace.QName;
@@ -312,7 +312,7 @@ public class TemisLuxidEnhancementEngine extends
     }
 
     protected Set<UriRef> getStanbolTypes(String entityPath) {
-        Set<UriRef> types = new TreeSet<UriRef>();
+        Set<UriRef> types = new LinkedHashSet<UriRef>();
 
         // TODO: un-hard-code mapping: use a configuration file or an OSGi property
         Map<String,UriRef> typeMap = new HashMap<String,UriRef>();
