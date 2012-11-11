@@ -1,5 +1,5 @@
 /* Copyright 2011 Nuxeo and contributors.
- * 
+ *
  * This file is licensed to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
@@ -75,7 +75,7 @@ import org.osgi.service.component.ComponentContext;
 /**
  * Enhancement engine implementation that delegate the analysis work to a Temis Luxid Annotation Factory
  * service.
- * 
+ *
  * The connection properties can be looked up from environment variables (upper case OSGi property names with
  * '_' instead of '.') if the properties are left undefined in the OSGi configuration.
  */
@@ -105,6 +105,8 @@ public class TemisLuxidEnhancementEngine extends
     @Property
     public static final String SERVICE_ANNOTATION_PLAN_PROPERTY = "stanbol.temis.luxid.service.annotation.plan";
 
+    public static final UriRef TRANSLITERATION = new UriRef("http://ns.nuxeo.org/temis/transliteration");
+
     /**
      * The default value for the Execution of this Engine. Currently set to
      * {@link ServiceProperties#ORDERING_CONTENT_EXTRACTION}
@@ -125,7 +127,7 @@ public class TemisLuxidEnhancementEngine extends
 
     /**
      * Load a required property value from OSGi context with fall-back on environment variable.
-     * 
+     *
      * @throws ConfigurationException
      *             if no configuration is found in either contexts.
      */
@@ -228,11 +230,11 @@ public class TemisLuxidEnhancementEngine extends
             for (OutputPart part : output.value.getParts()) {
                 if ("DOCUMENT".equals(part.getName()) && "text/xml".equals(part.getMime())) {
                     Doc result = Doc.readFrom(part.getText());
-                    for (Entity entity : result.getEntities()) {
+                    for (Entity entity : result.getMergedEntities()) {
                         UriRef entityAnnotation = EnhancementEngineHelper.createEntityEnhancement(ci, this);
                         String entityPath = entity.getPath();
                         UriRef entityUri = new UriRef(LUXID_NS + entityPath);
-                        String entityLabel = entityPath.substring(entityPath.lastIndexOf('/') + 1);
+                        String entityLabel = entity.getName();
 
                         // add the link to the referred entity
                         g.add(new TripleImpl(entityAnnotation, ENHANCER_ENTITY_REFERENCE, entityUri));
@@ -241,6 +243,10 @@ public class TemisLuxidEnhancementEngine extends
                         Set<UriRef> stanbolTypes = getStanbolTypes(entityPath);
                         for (UriRef entityType : stanbolTypes) {
                             g.add(new TripleImpl(entityAnnotation, ENHANCER_ENTITY_TYPE, entityType));
+                        }
+                        for (String transliteration: entity.transliterations) {
+                            g.add(new TripleImpl(entityAnnotation, TRANSLITERATION, literalFactory
+                                .createTypedLiteral(transliteration)));
                         }
 
                         // register entity occurrences
@@ -321,6 +327,7 @@ public class TemisLuxidEnhancementEngine extends
         typeMap.put("/Entity/Organisation", OntologicalClasses.DBPEDIA_ORGANISATION);
         typeMap.put("/Entity/Company", OntologicalClasses.DBPEDIA_ORGANISATION);
         typeMap.put("/Entity/Location", OntologicalClasses.DBPEDIA_PLACE);
+        typeMap.put("/Category", OntologicalClasses.SKOS_CONCEPT);
 
         while (entityPath.lastIndexOf('/') != -1) {
             entityPath = entityPath.substring(0, entityPath.lastIndexOf('/'));

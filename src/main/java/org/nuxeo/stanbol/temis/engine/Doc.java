@@ -18,6 +18,10 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
@@ -39,6 +43,49 @@ public class Doc {
 
     public void setEntities(ArrayList<Entity> entities) {
         this.entities = entities;
+    }
+
+    // Group entities referring to the same occurrence are merged and treated as
+    // tranlisterations of one another.
+    public List<Entity> getMergedEntities() {
+        List<Entity> mergedEntities = new ArrayList<Entity>();
+        Map<String, List<Entity>> entityGroups = new LinkedHashMap<String, List<Entity>>();
+        for (Entity entity : entities) {
+            // Use the occurrence data as an entity identifier to detect
+            // transliterations
+            String fingerprint = entity.getOccurrencesFingerprint();
+            List<Entity> group = entityGroups.get(fingerprint);
+            if (group == null) {
+                group = new ArrayList<Entity>();
+                entityGroups.put(fingerprint, group);
+            }
+            group.add(entity);
+        }
+        for (List<Entity> group : entityGroups.values()) {
+            mergedEntities.addAll(mergeTransliteration(group));
+        }
+        return mergedEntities;
+    }
+
+    protected Collection<? extends Entity> mergeTransliteration(
+            List<Entity> entityGroup) {
+        if (entityGroup.size() == 1) {
+            // don't merge transliterations for singletons
+            return entityGroup;
+        }
+        List<Entity> mergedEntities = new ArrayList<Entity>();
+        List<String> transliterations = new ArrayList<String>();
+        for (Entity entity : entityGroup) {
+            if (entity.isTransliteration()) {
+                transliterations.add(entity.getName());
+            } else {
+                mergedEntities.add(entity);
+            }
+        }
+        for (Entity mergedEntity : mergedEntities) {
+            mergedEntity.transliterations.addAll(transliterations);
+        }
+        return mergedEntities;
     }
 
     public static Doc readFrom(String xmlPayload) throws JAXBException {

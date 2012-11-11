@@ -54,4 +54,7 @@ public class Occurrence {
         this.text = text;
     }
 
+    public String getIdentitier() {
+        return String.format("%s - [%d:%d]", text, begin, end);
+    }
 }
