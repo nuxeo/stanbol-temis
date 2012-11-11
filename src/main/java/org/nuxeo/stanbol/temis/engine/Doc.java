@@ -45,8 +45,10 @@ public class Doc {
         this.entities = entities;
     }
 
-    // Group entities referring to the same occurrence are merged and treated as
-    // tranlisterations of one another.
+    /**
+     * Group entities referring to the same occurrence are merged and treated as
+     * tranlisterations of one another.
+     */
     public List<Entity> getMergedEntities() {
         List<Entity> mergedEntities = new ArrayList<Entity>();
         Map<String, List<Entity>> entityGroups = new LinkedHashMap<String, List<Entity>>();
@@ -54,17 +56,32 @@ public class Doc {
             // Use the occurrence data as an entity identifier to detect
             // transliterations
             String fingerprint = entity.getOccurrencesFingerprint();
-            List<Entity> group = entityGroups.get(fingerprint);
-            if (group == null) {
-                group = new ArrayList<Entity>();
-                entityGroups.put(fingerprint, group);
+            if (fingerprint == null || entity.isTopic()) {
+                // no occurrence, this is a topic or an entity type
+                continue;
+            } else {
+                List<Entity> group = entityGroups.get(fingerprint);
+                if (group == null) {
+                    group = new ArrayList<Entity>();
+                    entityGroups.put(fingerprint, group);
+                }
+                group.add(entity);
             }
-            group.add(entity);
         }
         for (List<Entity> group : entityGroups.values()) {
             mergedEntities.addAll(mergeTransliteration(group));
         }
         return mergedEntities;
+    }
+
+    public List<Entity> getTopicEntities() {
+        List<Entity> topicEntities = new ArrayList<Entity>();
+        for (Entity entity : entities) {
+            if (entity.isTopic()) {
+                topicEntities.add(entity);
+            }
+        }
+        return topicEntities;
     }
 
     protected Collection<? extends Entity> mergeTransliteration(

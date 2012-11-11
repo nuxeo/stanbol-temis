@@ -228,27 +228,24 @@ public class TemisLuxidEnhancementEngine extends
             wsPort.annotateString(token, annotationPlan, text, SIMPLE_XML_CONSUMER, output, fault);
             handleFault(fault);
             for (OutputPart part : output.value.getParts()) {
-                if ("DOCUMENT".equals(part.getName()) && "text/xml".equals(part.getMime())) {
+                if ("DOCUMENT".equals(part.getName())
+                        && "text/xml".equals(part.getMime())) {
                     Doc result = Doc.readFrom(part.getText());
+                    for (Entity entity : result.getTopicEntities()) {
+                        UriRef topicAnnotation = EnhancementEngineHelper.createTopicEnhancement(
+                                ci, this);
+                        addCommonEntityAttributes(literalFactory, g, entity,
+                                topicAnnotation);
+                    }
                     for (Entity entity : result.getMergedEntities()) {
-                        UriRef entityAnnotation = EnhancementEngineHelper.createEntityEnhancement(ci, this);
-                        String entityPath = entity.getPath();
-                        UriRef entityUri = new UriRef(LUXID_NS + entityPath);
-                        String entityLabel = entity.getName();
-
-                        // add the link to the referred entity
-                        g.add(new TripleImpl(entityAnnotation, ENHANCER_ENTITY_REFERENCE, entityUri));
-                        g.add(new TripleImpl(entityAnnotation, ENHANCER_ENTITY_LABEL, literalFactory
-                                .createTypedLiteral(entityLabel)));
-                        Set<UriRef> stanbolTypes = getStanbolTypes(entityPath);
-                        for (UriRef entityType : stanbolTypes) {
-                            g.add(new TripleImpl(entityAnnotation, ENHANCER_ENTITY_TYPE, entityType));
-                        }
+                        UriRef entityAnnotation = EnhancementEngineHelper.createEntityEnhancement(
+                                ci, this);
+                        Set<UriRef> stanbolTypes = addCommonEntityAttributes(
+                                literalFactory, g, entity, entityAnnotation);
                         for (String transliteration: entity.transliterations) {
                             g.add(new TripleImpl(entityAnnotation, TRANSLITERATION, literalFactory
                                 .createTypedLiteral(transliteration)));
                         }
-
                         // register entity occurrences
                         for (Occurrence occurrence : entity.getOccurrences()) {
                             UriRef textAnnotation = EnhancementEngineHelper.createTextEnhancement(ci, this);
@@ -280,6 +277,24 @@ public class TemisLuxidEnhancementEngine extends
                 wsPort.closeSession(token);
             }
         }
+    }
+
+    protected Set<UriRef> addCommonEntityAttributes(
+            LiteralFactory literalFactory, MGraph g, Entity entity,
+            UriRef entityAnnotation) {
+        String entityPath = entity.getPath();
+        UriRef entityUri = new UriRef(LUXID_NS + entityPath);
+        String entityLabel = entity.getName();
+
+        // add the link to the referred entity
+        g.add(new TripleImpl(entityAnnotation, ENHANCER_ENTITY_REFERENCE, entityUri));
+        g.add(new TripleImpl(entityAnnotation, ENHANCER_ENTITY_LABEL, literalFactory
+                .createTypedLiteral(entityLabel)));
+        Set<UriRef> stanbolTypes = getStanbolTypes(entityPath);
+        for (UriRef entityType : stanbolTypes) {
+            g.add(new TripleImpl(entityAnnotation, ENHANCER_ENTITY_TYPE, entityType));
+        }
+        return stanbolTypes;
     }
 
     protected String findContext(String text, int begin, int end) {

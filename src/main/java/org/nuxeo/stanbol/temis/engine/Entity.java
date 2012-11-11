@@ -16,6 +16,8 @@ package org.nuxeo.stanbol.temis.engine;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
@@ -23,19 +25,24 @@ import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlRootElement;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.WordUtils;
 
 @XmlRootElement(name = "entity")
 public class Entity {
 
-    private String id;
+    protected Pattern iptcName = Pattern.compile("(\\d+) - (.*)");
 
-    private String parentId;
+    protected Integer iptcNewsCode = null;
 
-    private String path;
+    protected String id;
 
-    private ArrayList<Occurrence> occurrences = new ArrayList<Occurrence>();
+    protected String parentId;
 
-    private String name;
+    protected String path;
+
+    protected ArrayList<Occurrence> occurrences = new ArrayList<Occurrence>();
+
+    protected String name;
 
     protected final List<String> transliterations = new ArrayList<String>();
 
@@ -69,6 +76,11 @@ public class Entity {
     public void setPath(String path) {
         this.path = path;
         this.name = path.substring(path.lastIndexOf('/') + 1).trim();
+        Matcher matcher = iptcName.matcher(this.name);
+        if (matcher.matches()) {
+            this.iptcNewsCode = Integer.valueOf(matcher.group(1));
+            this.name = WordUtils.capitalize(matcher.group(2));
+        }
     }
 
     @XmlElementWrapper(name = "occurrences")
@@ -87,6 +99,9 @@ public class Entity {
      *         document: this is useful to detect transliterations.
      */
     public String getOccurrencesFingerprint() {
+        if (occurrences.isEmpty()) {
+            return null;
+        }
         List<String> identifiers = new ArrayList<String>();
         for (Occurrence occ : occurrences) {
             identifiers.add(occ.getIdentitier());
@@ -95,18 +110,26 @@ public class Entity {
     }
 
     /**
-     * @return
+     * heuristic detection of entity annotation that mark transliterations
      */
     public boolean isTransliteration() {
         if (occurrences.isEmpty()) {
             // edge case that does not occur in practice
             return false;
         }
-        for (Occurrence occ: occurrences) {
+        for (Occurrence occ : occurrences) {
             if (name.equals(occ.getText().trim())) {
                 return false;
             }
         }
         return true;
+    }
+
+    public boolean isTopic() {
+        return path != null && path.startsWith("/Category/");
+    }
+
+    public Integer getIptcNewsCode() {
+        return iptcNewsCode;
     }
 }
