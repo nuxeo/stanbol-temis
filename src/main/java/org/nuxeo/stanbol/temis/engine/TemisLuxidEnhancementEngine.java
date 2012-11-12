@@ -242,15 +242,15 @@ public class TemisLuxidEnhancementEngine extends
                                 ci, this);
                         Set<UriRef> stanbolTypes = addCommonEntityAttributes(
                                 literalFactory, g, entity, entityAnnotation);
-                        for (String transliteration: entity.transliterations) {
-                            g.add(new TripleImpl(entityAnnotation, TRANSLITERATION, literalFactory
-                                .createTypedLiteral(transliteration)));
-                        }
                         // register entity occurrences
                         for (Occurrence occurrence : entity.getOccurrences()) {
                             UriRef textAnnotation = EnhancementEngineHelper.createTextEnhancement(ci, this);
                             for (UriRef entityType : stanbolTypes) {
                                 g.add(new TripleImpl(textAnnotation, DC_TYPE, entityType));
+                            }
+                            for (String transliteration: entity.transliterations) {
+                                g.add(new TripleImpl(textAnnotation, TRANSLITERATION, literalFactory
+                                    .createTypedLiteral(transliteration)));
                             }
                             String context = findContext(text, occurrence.getBegin(), occurrence.getEnd());
                             String selectedText = occurrence.getText();
