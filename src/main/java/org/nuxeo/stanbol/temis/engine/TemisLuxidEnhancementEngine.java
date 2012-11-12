@@ -60,6 +60,7 @@ import org.apache.stanbol.enhancer.servicesapi.EnhancementEngine;
 import org.apache.stanbol.enhancer.servicesapi.ServiceProperties;
 import org.apache.stanbol.enhancer.servicesapi.helper.EnhancementEngineHelper;
 import org.apache.stanbol.enhancer.servicesapi.impl.AbstractEnhancementEngine;
+import org.apache.stanbol.enhancer.servicesapi.rdf.NamespaceEnum;
 import org.apache.stanbol.enhancer.servicesapi.rdf.OntologicalClasses;
 import org.nuxeo.stanbol.temis.impl.AnnotationPlan;
 import org.nuxeo.stanbol.temis.impl.ArrayOfAnnotationPlan;
@@ -105,7 +106,7 @@ public class TemisLuxidEnhancementEngine extends
     @Property
     public static final String SERVICE_ANNOTATION_PLAN_PROPERTY = "stanbol.temis.luxid.service.annotation.plan";
 
-    public static final UriRef TRANSLITERATION = new UriRef("http://ns.nuxeo.org/temis/transliteration");
+    public static final UriRef TRANSLITERATION = new UriRef(NamespaceEnum.fise + "transliteration");
 
     /**
      * The default value for the Execution of this Engine. Currently set to
@@ -248,10 +249,6 @@ public class TemisLuxidEnhancementEngine extends
                             for (UriRef entityType : stanbolTypes) {
                                 g.add(new TripleImpl(textAnnotation, DC_TYPE, entityType));
                             }
-                            for (String transliteration: entity.transliterations) {
-                                g.add(new TripleImpl(textAnnotation, TRANSLITERATION, literalFactory
-                                    .createTypedLiteral(transliteration)));
-                            }
                             String context = findContext(text, occurrence.getBegin(), occurrence.getEnd());
                             String selectedText = occurrence.getText();
                             g.add(new TripleImpl(textAnnotation, ENHANCER_SELECTED_TEXT, literalFactory
@@ -263,6 +260,11 @@ public class TemisLuxidEnhancementEngine extends
                             g.add(new TripleImpl(textAnnotation, ENHANCER_END,
                                     literalFactory.createTypedLiteral(context.indexOf(selectedText)
                                                                       + selectedText.length())));
+                            for (String transliteration: entity.transliterations) {
+                                g.add(new TripleImpl(textAnnotation, TRANSLITERATION, literalFactory
+                                    .createTypedLiteral(transliteration)));
+                            }
+                            // Link entity annotations to its occurrences
                             g.add(new TripleImpl(entityAnnotation, DC_RELATION, textAnnotation));
                         }
                     }
