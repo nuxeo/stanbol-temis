@@ -30,7 +30,7 @@ import org.apache.commons.lang.WordUtils;
 @XmlRootElement(name = "entity")
 public class Entity {
 
-    protected Pattern iptcName = Pattern.compile("(\\d+) - (.*)");
+    protected Pattern iptcName = Pattern.compile("^(\\d+) - (.+?)(-DEPRECATED)?$");
 
     protected Integer iptcNewsCode = null;
 
@@ -45,6 +45,8 @@ public class Entity {
     protected String name;
 
     protected final List<String> transliterations = new ArrayList<String>();
+
+    protected boolean deprecated = false;
 
     @XmlAttribute
     public String getId() {
@@ -80,6 +82,9 @@ public class Entity {
         if (matcher.matches()) {
             this.iptcNewsCode = Integer.valueOf(matcher.group(1));
             this.name = WordUtils.capitalize(matcher.group(2));
+            if (matcher.groupCount() == 3) {
+                this.deprecated  = true;
+            }
         }
     }
 
@@ -131,5 +136,9 @@ public class Entity {
 
     public Integer getIptcNewsCode() {
         return iptcNewsCode;
+    }
+
+    public boolean isDeprecated() {
+        return deprecated;
     }
 }
