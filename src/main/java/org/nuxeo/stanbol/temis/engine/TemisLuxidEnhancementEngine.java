@@ -233,6 +233,10 @@ public class TemisLuxidEnhancementEngine extends
                         && "text/xml".equals(part.getMime())) {
                     Doc result = Doc.readFrom(part.getText());
                     for (Entity entity : result.getTopicEntities()) {
+                        if ("other".equals(entity.getName().toLowerCase())) {
+                            // skip place holder topic
+                            continue;
+                        }
                         UriRef topicAnnotation = EnhancementEngineHelper.createTopicEnhancement(
                                 ci, this);
                         addCommonEntityAttributes(literalFactory, g, entity,
