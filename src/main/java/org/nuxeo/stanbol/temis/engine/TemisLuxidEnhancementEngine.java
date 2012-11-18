@@ -346,6 +346,7 @@ public class TemisLuxidEnhancementEngine extends
         typeMap.put("/Entity/Person", OntologicalClasses.DBPEDIA_PERSON);
         typeMap.put("/Entity/Media", OntologicalClasses.DBPEDIA_ORGANISATION);
         typeMap.put("/Entity/Organisation", OntologicalClasses.DBPEDIA_ORGANISATION);
+        typeMap.put("/Entity/Organization", OntologicalClasses.DBPEDIA_ORGANISATION);
         typeMap.put("/Entity/Company", OntologicalClasses.DBPEDIA_ORGANISATION);
         typeMap.put("/Entity/Location", OntologicalClasses.DBPEDIA_PLACE);
         typeMap.put("/Category", OntologicalClasses.SKOS_CONCEPT);
