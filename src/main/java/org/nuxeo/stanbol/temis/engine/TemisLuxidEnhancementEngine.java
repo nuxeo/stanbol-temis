@@ -74,25 +74,28 @@ import org.osgi.service.cm.ConfigurationException;
 import org.osgi.service.component.ComponentContext;
 
 /**
- * Enhancement engine implementation that delegate the analysis work to a Temis Luxid Annotation Factory
- * service.
- *
- * The connection properties can be looked up from environment variables (upper case OSGi property names with
- * '_' instead of '.') if the properties are left undefined in the OSGi configuration.
+ * Enhancement engine implementation that delegate the analysis work to a Temis
+ * Luxid Annotation Factory service.
+ * 
+ * The connection properties can be looked up from environment variables (upper
+ * case OSGi property names with '_' instead of '.') if the properties are left
+ * undefined in the OSGi configuration.
  */
 @Component(configurationFactory = true, immediate = true, metatype = true, policy = ConfigurationPolicy.REQUIRE, specVersion = "1.1", inherit = true, label = "%stanbol.TemisEnhancementEngine.name", description = "%stanbol.TemisEnhancementEngine.description")
 @Service
-@Properties(value = {@Property(name = EnhancementEngine.PROPERTY_NAME, value = "temis"),
-                     @Property(name = Constants.SERVICE_RANKING, intValue = 0)})
+@Properties(value = {
+        @Property(name = EnhancementEngine.PROPERTY_NAME, value = "temis"),
+        @Property(name = Constants.SERVICE_RANKING, intValue = 0) })
 public class TemisLuxidEnhancementEngine extends
-        AbstractEnhancementEngine<ConfigurationException,RuntimeException> implements EnhancementEngine,
-        ServiceProperties {
+        AbstractEnhancementEngine<ConfigurationException, RuntimeException>
+        implements EnhancementEngine, ServiceProperties {
 
-    public static final String SIMPLE_XML_CONSUMER = "SimpleXML";
+    public static final String DEFAULT_CAS_CONSUMER = "SimpleXML";
 
     public static final Log log = LogFactory.getLog(TemisLuxidEnhancementEngine.class);
 
-    public static final QName SERVICE_NAME = new QName("http://luxid.temis.com/ws", "TemisWebService");
+    public static final QName SERVICE_NAME = new QName(
+            "http://luxid.temis.com/ws", "TemisWebService");
 
     @Property
     public static final String SERVICE_WSDL_URL_PROPERTY = "stanbol.temis.luxid.service.wsdl.url";
@@ -106,7 +109,11 @@ public class TemisLuxidEnhancementEngine extends
     @Property
     public static final String SERVICE_ANNOTATION_PLAN_PROPERTY = "stanbol.temis.luxid.service.annotation.plan";
 
-    public static final UriRef TRANSLITERATION = new UriRef(NamespaceEnum.fise + "transliteration");
+    @Property
+    public static final String SERVICE_CAS_CONSUMER_PROPERTY = "stanbol.temis.luxid.service.cas.consumer";
+
+    public static final UriRef TRANSLITERATION = new UriRef(NamespaceEnum.fise
+            + "transliteration");
 
     /**
      * The default value for the Execution of this Engine. Currently set to
@@ -124,23 +131,39 @@ public class TemisLuxidEnhancementEngine extends
 
     protected String accountPassword;
 
+    protected String casConsumer;
+
     protected TemisWebServicePortType wsPort;
 
     /**
-     * Load a required property value from OSGi context with fall-back on environment variable.
-     *
-     * @throws ConfigurationException
-     *             if no configuration is found in either contexts.
+     * Load a required property value from OSGi context with fall-back on
+     * environment variable.
+     * 
+     * @throws ConfigurationException if no configuration is found in either
+     *             contexts.
      */
-    protected String getFromPropertiesOrEnv(Dictionary<String,String> properties, String propertyName) throws ConfigurationException {
+    protected String getFromPropertiesOrEnv(
+            Dictionary<String, String> properties, String propertyName)
+            throws ConfigurationException {
+        return getFromPropertiesOrEnv(properties, propertyName, null);
+    }
+
+    protected String getFromPropertiesOrEnv(
+            Dictionary<String, String> properties, String propertyName,
+            String defaultValue) throws ConfigurationException {
         String envVariableName = propertyName.replaceAll("\\.", "_").toUpperCase();
         String propertyValue = System.getenv(envVariableName);
-        if (properties.get(propertyName) != null && !properties.get(propertyName).trim().isEmpty()) {
+        if (properties.get(propertyName) != null
+                && !properties.get(propertyName).trim().isEmpty()) {
             propertyValue = properties.get(propertyName);
         }
         if (propertyValue == null || propertyValue.trim().isEmpty()) {
-            throw new ConfigurationException(propertyName, String.format("%s is a required property",
-                propertyName));
+            if (defaultValue == null) {
+                throw new ConfigurationException(propertyName, String.format(
+                        "%s is a required property", propertyName));
+            } else {
+                return defaultValue;
+            }
         }
         return propertyValue;
     }
@@ -149,19 +172,28 @@ public class TemisLuxidEnhancementEngine extends
     protected void activate(ComponentContext ce) throws ConfigurationException {
         super.activate(ce);
         @SuppressWarnings("unchecked")
-        Dictionary<String,String> properties = ce.getProperties();
-        String urlString = getFromPropertiesOrEnv(properties, SERVICE_WSDL_URL_PROPERTY);
-        accountId = getFromPropertiesOrEnv(properties, SERVICE_ACCOUNT_ID_PROPERTY);
-        accountPassword = getFromPropertiesOrEnv(properties, SERVICE_ACCOUNT_PASSWORD_PROPERTY);
-        annotationPlan = getFromPropertiesOrEnv(properties, SERVICE_ANNOTATION_PLAN_PROPERTY);
+        Dictionary<String, String> properties = ce.getProperties();
+        String urlString = getFromPropertiesOrEnv(properties,
+                SERVICE_WSDL_URL_PROPERTY);
+        accountId = getFromPropertiesOrEnv(properties,
+                SERVICE_ACCOUNT_ID_PROPERTY);
+        accountPassword = getFromPropertiesOrEnv(properties,
+                SERVICE_ACCOUNT_PASSWORD_PROPERTY);
+        annotationPlan = getFromPropertiesOrEnv(properties,
+                SERVICE_ANNOTATION_PLAN_PROPERTY);
+        casConsumer = getFromPropertiesOrEnv(properties,
+                SERVICE_CAS_CONSUMER_PROPERTY, DEFAULT_CAS_CONSUMER);
 
-        // check the connection to fail early in case of bad configuration parameters
+        // check the connection to fail early in case of bad configuration
+        // parameters
         String sessionId = null;
         try {
-            TemisWebService tws = new TemisWebService(new URL(urlString), SERVICE_NAME);
+            TemisWebService tws = new TemisWebService(new URL(urlString),
+                    SERVICE_NAME);
             wsPort = tws.getWebAnnotationPort();
             sessionId = connect();
-            // check that the requested annotationPlan is available to the authenticated user
+            // check that the requested annotationPlan is available to the
+            // authenticated user
             Holder<ArrayOfAnnotationPlan> plans = new Holder<ArrayOfAnnotationPlan>();
             Holder<Fault> fault = new Holder<Fault>();
             wsPort.getPlans(sessionId, plans, fault);
@@ -177,15 +209,18 @@ public class TemisLuxidEnhancementEngine extends
             }
             if (!foundPlan) {
                 throw new TemisEnhancementEngineException(String.format(
-                    "The requested annotationPlan '%s' is does not belong to"
-                            + " the list of available plans: '%s'", annotationPlan,
-                    StringUtils.join(availablePlanNames, ", ")));
+                        "The requested annotationPlan '%s' is does not belong to"
+                                + " the list of available plans: '%s'",
+                        annotationPlan,
+                        StringUtils.join(availablePlanNames, ", ")));
             }
         } catch (TemisEnhancementEngineException e) {
             log.error(e, e);
-            throw new ConfigurationException(SERVICE_WSDL_URL_PROPERTY, e.getMessage());
+            throw new ConfigurationException(SERVICE_WSDL_URL_PROPERTY,
+                    e.getMessage());
         } catch (MalformedURLException e) {
-            throw new ConfigurationException(SERVICE_WSDL_URL_PROPERTY, e.getMessage());
+            throw new ConfigurationException(SERVICE_WSDL_URL_PROPERTY,
+                    e.getMessage());
         } finally {
             if (sessionId != null) {
                 wsPort.closeSession(sessionId);
@@ -208,8 +243,10 @@ public class TemisLuxidEnhancementEngine extends
         return token.value;
     }
 
-    protected void handleFault(Holder<Fault> fault) throws TemisEnhancementEngineException {
-        if (fault.value != null && fault.value.getMessage() != null && !fault.value.getMessage().isEmpty()) {
+    protected void handleFault(Holder<Fault> fault)
+            throws TemisEnhancementEngineException {
+        if (fault.value != null && fault.value.getMessage() != null
+                && !fault.value.getMessage().isEmpty()) {
             throw new TemisEnhancementEngineException(fault.value);
         }
     }
@@ -222,56 +259,20 @@ public class TemisLuxidEnhancementEngine extends
         try {
             token = connect();
             Holder<Fault> fault = new Holder<Fault>();
-            // TODO: read charset from the request instead of hardcoding UTF-8 requirement
-            // TODO: extract ~3 sentences context for each annotation is possible
-            String text = IOUtils.toString(ci.getStream(), "UTF-8");
+            // TODO: read charset from the request instead of hardcoding UTF-8
+            // requirement
+            // TODO: extract ~3 sentences context for each annotation is
+            // possible
+            String luxidInput = IOUtils.toString(ci.getStream(), "UTF-8");
             Holder<Output> output = new Holder<Output>();
-            wsPort.annotateString(token, annotationPlan, text, SIMPLE_XML_CONSUMER, output, fault);
+            wsPort.annotateString(token, annotationPlan, luxidInput,
+                    casConsumer, output, fault);
             handleFault(fault);
             for (OutputPart part : output.value.getParts()) {
                 if ("DOCUMENT".equals(part.getName())
                         && "text/xml".equals(part.getMime())) {
-                    Doc result = Doc.readFrom(part.getText());
-                    for (Entity entity : result.getTopicEntities()) {
-                        if ("other".equals(entity.getName().toLowerCase())) {
-                            // skip place holder topic
-                            continue;
-                        }
-                        UriRef topicAnnotation = EnhancementEngineHelper.createTopicEnhancement(
-                                ci, this);
-                        addCommonEntityAttributes(literalFactory, g, entity,
-                                topicAnnotation);
-                    }
-                    for (Entity entity : result.getMergedEntities()) {
-                        UriRef entityAnnotation = EnhancementEngineHelper.createEntityEnhancement(
-                                ci, this);
-                        Set<UriRef> stanbolTypes = addCommonEntityAttributes(
-                                literalFactory, g, entity, entityAnnotation);
-                        // register entity occurrences
-                        for (Occurrence occurrence : entity.getOccurrences()) {
-                            UriRef textAnnotation = EnhancementEngineHelper.createTextEnhancement(ci, this);
-                            for (UriRef entityType : stanbolTypes) {
-                                g.add(new TripleImpl(textAnnotation, DC_TYPE, entityType));
-                            }
-                            String context = findContext(text, occurrence.getBegin(), occurrence.getEnd());
-                            String selectedText = occurrence.getText();
-                            g.add(new TripleImpl(textAnnotation, ENHANCER_SELECTED_TEXT, literalFactory
-                                    .createTypedLiteral(selectedText)));
-                            g.add(new TripleImpl(textAnnotation, ENHANCER_SELECTION_CONTEXT, literalFactory
-                                    .createTypedLiteral(context)));
-                            g.add(new TripleImpl(textAnnotation, ENHANCER_START, literalFactory
-                                    .createTypedLiteral(context.indexOf(selectedText))));
-                            g.add(new TripleImpl(textAnnotation, ENHANCER_END,
-                                    literalFactory.createTypedLiteral(context.indexOf(selectedText)
-                                                                      + selectedText.length())));
-                            for (String transliteration: entity.transliterations) {
-                                g.add(new TripleImpl(textAnnotation, TRANSLITERATION, literalFactory
-                                    .createTypedLiteral(transliteration)));
-                            }
-                            // Link entity annotations to its occurrences
-                            g.add(new TripleImpl(entityAnnotation, DC_RELATION, textAnnotation));
-                        }
-                    }
+                    String luxidOutput = part.getText();
+                    handleLuxidOutput(ci, literalFactory, g, luxidInput, luxidOutput);
                 }
             }
         } catch (IOException e) {
@@ -285,6 +286,60 @@ public class TemisLuxidEnhancementEngine extends
         }
     }
 
+    protected void handleLuxidOutput(ContentItem ci,
+            LiteralFactory literalFactory, MGraph g, String text,
+            String luxidOutput) throws JAXBException {
+        Doc result = Doc.readFrom(luxidOutput);
+        for (Entity entity : result.getTopicEntities()) {
+            if ("other".equals(entity.getName().toLowerCase())) {
+                // skip place holder topic
+                continue;
+            }
+            UriRef topicAnnotation = EnhancementEngineHelper.createTopicEnhancement(
+                    ci, this);
+            addCommonEntityAttributes(literalFactory, g, entity,
+                    topicAnnotation);
+        }
+        for (Entity entity : result.getMergedEntities()) {
+            UriRef entityAnnotation = EnhancementEngineHelper.createEntityEnhancement(
+                    ci, this);
+            Set<UriRef> stanbolTypes = addCommonEntityAttributes(
+                    literalFactory, g, entity, entityAnnotation);
+            // register entity occurrences
+            for (Occurrence occurrence : entity.getOccurrences()) {
+                UriRef textAnnotation = EnhancementEngineHelper.createTextEnhancement(
+                        ci, this);
+                for (UriRef entityType : stanbolTypes) {
+                    g.add(new TripleImpl(textAnnotation, DC_TYPE, entityType));
+                }
+                String context = findContext(text, occurrence.getBegin(),
+                        occurrence.getEnd());
+                String selectedText = occurrence.getText();
+                g.add(new TripleImpl(textAnnotation, ENHANCER_SELECTED_TEXT,
+                        literalFactory.createTypedLiteral(selectedText)));
+                g.add(new TripleImpl(textAnnotation,
+                        ENHANCER_SELECTION_CONTEXT,
+                        literalFactory.createTypedLiteral(context)));
+                g.add(new TripleImpl(
+                        textAnnotation,
+                        ENHANCER_START,
+                        literalFactory.createTypedLiteral(context.indexOf(selectedText))));
+                g.add(new TripleImpl(
+                        textAnnotation,
+                        ENHANCER_END,
+                        literalFactory.createTypedLiteral(context.indexOf(selectedText)
+                                + selectedText.length())));
+                for (String transliteration : entity.transliterations) {
+                    g.add(new TripleImpl(textAnnotation, TRANSLITERATION,
+                            literalFactory.createTypedLiteral(transliteration)));
+                }
+                // Link entity annotations to its occurrences
+                g.add(new TripleImpl(entityAnnotation, DC_RELATION,
+                        textAnnotation));
+            }
+        }
+    }
+
     protected Set<UriRef> addCommonEntityAttributes(
             LiteralFactory literalFactory, MGraph g, Entity entity,
             UriRef entityAnnotation) {
@@ -293,12 +348,14 @@ public class TemisLuxidEnhancementEngine extends
         String entityLabel = entity.getName();
 
         // add the link to the referred entity
-        g.add(new TripleImpl(entityAnnotation, ENHANCER_ENTITY_REFERENCE, entityUri));
-        g.add(new TripleImpl(entityAnnotation, ENHANCER_ENTITY_LABEL, literalFactory
-                .createTypedLiteral(entityLabel)));
+        g.add(new TripleImpl(entityAnnotation, ENHANCER_ENTITY_REFERENCE,
+                entityUri));
+        g.add(new TripleImpl(entityAnnotation, ENHANCER_ENTITY_LABEL,
+                literalFactory.createTypedLiteral(entityLabel)));
         Set<UriRef> stanbolTypes = getStanbolTypes(entityPath);
         for (UriRef entityType : stanbolTypes) {
-            g.add(new TripleImpl(entityAnnotation, ENHANCER_ENTITY_TYPE, entityType));
+            g.add(new TripleImpl(entityAnnotation, ENHANCER_ENTITY_TYPE,
+                    entityType));
         }
         return stanbolTypes;
     }
@@ -326,7 +383,8 @@ public class TemisLuxidEnhancementEngine extends
                 Collections.reverse(tokens);
             }
             tokens = new ArrayList<String>(tokens.subList(0, maxWords));
-            if ((!reverse && content.startsWith(" ")) || (reverse && content.endsWith(" "))) {
+            if ((!reverse && content.startsWith(" "))
+                    || (reverse && content.endsWith(" "))) {
                 // re-add missing space removed by split
                 tokens.add(0, " ");
             }
@@ -341,12 +399,15 @@ public class TemisLuxidEnhancementEngine extends
     protected Set<UriRef> getStanbolTypes(String entityPath) {
         Set<UriRef> types = new LinkedHashSet<UriRef>();
 
-        // TODO: un-hard-code mapping: use a configuration file or an OSGi property
-        Map<String,UriRef> typeMap = new HashMap<String,UriRef>();
+        // TODO: un-hard-code mapping: use a configuration file or an OSGi
+        // property
+        Map<String, UriRef> typeMap = new HashMap<String, UriRef>();
         typeMap.put("/Entity/Person", OntologicalClasses.DBPEDIA_PERSON);
         typeMap.put("/Entity/Media", OntologicalClasses.DBPEDIA_ORGANISATION);
-        typeMap.put("/Entity/Organisation", OntologicalClasses.DBPEDIA_ORGANISATION);
-        typeMap.put("/Entity/Organization", OntologicalClasses.DBPEDIA_ORGANISATION);
+        typeMap.put("/Entity/Organisation",
+                OntologicalClasses.DBPEDIA_ORGANISATION);
+        typeMap.put("/Entity/Organization",
+                OntologicalClasses.DBPEDIA_ORGANISATION);
         typeMap.put("/Entity/Company", OntologicalClasses.DBPEDIA_ORGANISATION);
         typeMap.put("/Entity/Location", OntologicalClasses.DBPEDIA_PLACE);
         typeMap.put("/Category", OntologicalClasses.SKOS_CONCEPT);
@@ -362,7 +423,8 @@ public class TemisLuxidEnhancementEngine extends
     }
 
     public int canEnhance(ContentItem ci) {
-        // TODO: check what format are supported by Luxid instead of constraining to text/plain
+        // TODO: check what format are supported by Luxid instead of
+        // constraining to text/plain
         String mimeType = ci.getMimeType().split(";", 2)[0];
         if (TEXT_PLAIN_MIMETYPE.equalsIgnoreCase(mimeType)) {
             return ENHANCE_SYNCHRONOUS;
@@ -371,9 +433,9 @@ public class TemisLuxidEnhancementEngine extends
     }
 
     @Override
-    public Map<String,Object> getServiceProperties() {
-        return Collections.unmodifiableMap(Collections.singletonMap(ENHANCEMENT_ENGINE_ORDERING,
-            (Object) defaultOrder));
+    public Map<String, Object> getServiceProperties() {
+        return Collections.unmodifiableMap(Collections.singletonMap(
+                ENHANCEMENT_ENGINE_ORDERING, (Object) defaultOrder));
     }
 
 }
